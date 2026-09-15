@@ -1,0 +1,10 @@
+Hublio is SEPARATE from Sampra.
+
+  Hublio (wellness app):  C:\Projects\Hublio
+  Sampra (web + mobile):  C:\Sampra
+
+Run Hublio only:
+  Double-click  C:\Projects\Hublio\Start Hublio.bat
+  Open          http://localhost:3000/login.html
+
+Sampra is NOT started by Hublio. Different folder, different port (3000).

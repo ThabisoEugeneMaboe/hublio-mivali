@@ -1,0 +1,178 @@
+{
+  "teacher": {
+    "id": 1,
+    "name": "Ms Kholofelo",
+    "className": "Class 2B",
+    "email": "kholofelo@school.local",
+    "avatarUrl": "mario.jpeg"
+  },
+  "learner": {
+    "id": 1,
+    "code": "024",
+    "name": "Thabiso Maboe",
+    "grade": "Grade 5B",
+    "className": "Class 2B"
+  },
+  "alerts": [
+    {
+      "id": "694",
+      "name": "Thabiso Maboe A.",
+      "grade": "Grade 5B",
+      "type": "Feeling happy",
+      "time": "Just now",
+      "level": "New",
+      "color": "purple",
+      "concern": "Home or family",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "status": "Open"
+    },
+    {
+      "id": "691",
+      "name": "Thabiso Maboe A.",
+      "grade": "Grade 5B",
+      "type": "Feeling happy",
+      "time": "Just now",
+      "level": "New",
+      "color": "purple",
+      "concern": "Bullying or safety",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "status": "Open"
+    },
+    {
+      "id": "551",
+      "name": "Thabiso Maboe A.",
+      "grade": "Grade 5B",
+      "type": "Feeling happy",
+      "time": "Just now",
+      "level": "New",
+      "color": "purple",
+      "concern": "I feel sick",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "status": "Open"
+    },
+    {
+      "id": "207",
+      "name": "Thabiso Maboe A.",
+      "grade": "Grade 5B",
+      "type": "Feeling happy",
+      "time": "Just now",
+      "level": "New",
+      "color": "purple",
+      "concern": "I feel sick",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "status": "Open"
+    },
+    {
+      "id": "024",
+      "name": "Thabiso Maboe",
+      "grade": "Class 2B",
+      "type": "Feeling unsafe",
+      "time": "8 min ago",
+      "level": "Critical",
+      "color": "red",
+      "concern": "Bullying or safety",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "status": "Resolved"
+    },
+    {
+      "id": "031",
+      "name": "Sipho K.",
+      "grade": "Class 2B",
+      "type": "Feeling anxious",
+      "time": "24 min ago",
+      "level": "Attention",
+      "color": "orange",
+      "concern": "Friends or classmates",
+      "message": "",
+      "status": "Open"
+    },
+    {
+      "id": "018",
+      "name": "Amahle N.",
+      "grade": "Grade 4A",
+      "type": "Feeling sick",
+      "time": "42 min ago",
+      "level": "New",
+      "color": "purple",
+      "concern": "I feel sick",
+      "message": "",
+      "status": "Open"
+    }
+  ],
+  "stats": {
+    "feelingOkay": 27,
+    "activeAlerts": 7,
+    "checkedInPercent": 86,
+    "awaitingFollowUp": 1
+  },
+  "moodBreakdown": [
+    {
+      "mood": "Happy",
+      "count": 18,
+      "percent": 67,
+      "color": "#52c978"
+    },
+    {
+      "mood": "Okay",
+      "count": 7,
+      "percent": 26,
+      "color": "#8c70d3"
+    },
+    {
+      "mood": "Anxious",
+      "count": 2,
+      "percent": 7,
+      "color": "#f3a11b"
+    },
+    {
+      "mood": "Sad",
+      "count": 1,
+      "percent": 4,
+      "color": "#df5948"
+    }
+  ],
+  "checkIns": [
+    {
+      "mood": "Happy",
+      "isOkay": true,
+      "concern": "Bullying or safety",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "submittedAt": "2026-09-10T11:16:42.541Z"
+    },
+    {
+      "mood": "Happy",
+      "isOkay": false,
+      "concern": "I feel sick",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "submittedAt": "2026-09-10T11:16:55.706Z"
+    },
+    {
+      "mood": "Happy",
+      "isOkay": false,
+      "concern": "I feel sick",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "submittedAt": "2026-09-10T11:18:01.603Z"
+    },
+    {
+      "mood": "Happy",
+      "isOkay": false,
+      "concern": "Bullying or safety",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "submittedAt": "2026-09-10T11:23:34.047Z"
+    },
+    {
+      "mood": "Happy",
+      "isOkay": true,
+      "concern": "Bullying or safety",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "submittedAt": "2026-09-10T14:35:10.158Z"
+    },
+    {
+      "mood": "Happy",
+      "isOkay": false,
+      "concern": "Home or family",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "submittedAt": "2026-09-10T14:35:35.123Z"
+    }
+  ]
+}

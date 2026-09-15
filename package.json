@@ -1,0 +1,10 @@
+{
+  "name": "hublio-wellness",
+  "version": "1.0.0",
+  "description": "Hublio learner wellness check-in and teacher dashboard",
+  "scripts": {
+    "start": "node api/server.js",
+    "dev": "node api/server.js"
+  },
+  "private": true
+}
