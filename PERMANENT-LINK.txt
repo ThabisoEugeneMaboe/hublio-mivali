@@ -1,0 +1,30 @@
+WHY THE AZURE LINK DOES NOT WORK YET
+====================================
+hublio-mivali-sampra.azurewebsites.net shows "site can't be reached"
+because the Azure app was NEVER created. Deploy stopped at Azure sign-in.
+
+WORKING LINK RIGHT NOW (temporary - PC must stay on)
+====================================================
+https://thanksgiving-checked-upper-loans.trycloudflare.com/login.html
+
+OPTION A - Azure permanent link (recommended for SAMPRA)
+======================================================
+1. Double-click:  DEPLOY-NOW.bat
+2. Copy the device code shown in the black window
+3. Open:  https://login.microsoft.com/device
+4. Paste code, sign in with Stuarth@sampra.org.za
+5. Wait for DEPLOY SUCCESS
+
+Permanent URL after success:
+https://hublio-mivali-sampra.azurewebsites.net/login.html
+
+OPTION B - Render.com free permanent link (no Azure needed)
+===========================================================
+1. Create free account at https://render.com
+2. Push this folder to GitHub (or ask Cursor to help)
+3. On Render: New + Web Service
+4. Connect repo, settings:
+   - Build command:  echo ok
+   - Start command:  node api/server.js
+   - Plan: Free
+5. You get:  https://hublio-mivali.onrender.com/login.html

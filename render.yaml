@@ -3,6 +3,9 @@ services:
     name: hublio-mivali
     runtime: node
     plan: free
-    buildCommand: echo "No build step"
+    buildCommand: npm install
     startCommand: node api/server.js
     healthCheckPath: /login.html
+    envVars:
+      - key: NODE_VERSION
+        value: "20"

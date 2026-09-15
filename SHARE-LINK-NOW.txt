@@ -1,0 +1,12 @@
+Hublio share link (works while your PC is on):
+
+https://mixing-suddenly-navigation-halifax.trycloudflare.com/login.html
+
+Permanent link (after Azure deploy succeeds):
+
+https://hublio-mivali-sampra.azurewebsites.net/login.html
+
+To deploy permanent link, run:
+  Login and Deploy Hublio.bat
+
+If deploy fails, open deploy-log.txt for the error.

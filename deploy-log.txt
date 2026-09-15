@@ -1,0 +1,7 @@
+Deploy started Tue 09/15/2026 15:32:06.20 
+Step 1: Azure CLI sign-in 
+WARNING: Select the account you want to log in with. For more information on login with Azure CLI, see https://go.microsoft.com/fwlink/?linkid=2271136
+ERROR: The server has not found anything matching the requested URI (Uniform Resource Identifier).. Status: Response_Status.Status_NoNetwork, Error code: 3399680404, Tag: 557973641
+Run the command below to authenticate interactively; additional arguments may be added as needed:
+az logout
+az login
