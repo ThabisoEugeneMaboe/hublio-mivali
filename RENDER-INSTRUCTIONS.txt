@@ -1,0 +1,45 @@
+HUBLIO ON RENDER.COM - PERMANENT LINK
+=====================================
+
+Your permanent link after deploy:
+  https://hublio-mivali.onrender.com/login.html
+
+QUICK SETUP (about 5 minutes)
+-----------------------------
+
+1) Double-click:  RENDER-DEPLOY.bat
+
+2) Sign in to GitHub when the browser opens
+   (or go to https://github.com/login/device and enter the code shown)
+
+3) Render opens automatically - click "Apply" to deploy
+   - Sign up / sign in to Render (free) if asked
+   - Plan: Free
+   - Wait 2-3 minutes for "Live"
+
+4) Open your permanent link:
+   https://hublio-mivali.onrender.com/login.html
+
+MANUAL SETUP (if batch file fails)
+----------------------------------
+
+A) GitHub
+   - Create account at https://github.com
+   - Create new public repo named: hublio-mivali
+   - Upload all files from C:\Projects\Hublio
+
+B) Render
+   - Go to https://render.com and sign up (free)
+   - New + Blueprint
+   - Connect GitHub repo hublio-mivali
+   - Click Apply
+
+C) Or New Web Service with:
+   - Build command:  npm install
+   - Start command:  node api/server.js
+   - Plan: Free
+
+NOTES
+-----
+- Free Render apps sleep after 15 min idle; first visit may take ~30 sec to wake
+- No PC needed once deployed - truly permanent share link
