@@ -1,14 +1,16 @@
 const API = '/api';
 
+let me = null;
 let db = null;
 let alerts = [];
-let stats = { feelingOkay: 27, activeAlerts: 3, checkedInPercent: 86, awaitingFollowUp: 2 };
-let moodBreakdown = [
-  ['Happy', 18, 67, '#52c978'],
-  ['Okay', 7, 26, '#8c70d3'],
-  ['Anxious', 2, 7, '#f3a11b'],
-  ['Sad', 1, 4, '#df5948'],
-];
+let cases = [];
+let stats = { feelingOkay: 0, activeAlerts: 0, checkedInPercent: 0, awaitingFollowUp: 0 };
+let moodBreakdown = [];
+let teacherNav = 'Dashboard';
+let caseId = '';
+let mood = 'Happy';
+let concern = 'Bullying or safety';
+let learnerMessage = '';
 
 const currentPage = location.pathname.split('/').pop() || 'index.html';
 const pageState = {
@@ -18,10 +20,10 @@ const pageState = {
   'message.html': ['learner', 'note'],
   'sent.html': ['learner', 'sent'],
   'okay.html': ['learner', 'okay'],
-  'dashboard.html': ['teacher', 'dashboard'],
-  'case.html': ['teacher', 'case'],
-  'followup.html': ['teacher', 'followup'],
-  'resolved.html': ['teacher', 'resolved'],
+  'dashboard.html': ['staff', 'dashboard'],
+  'case.html': ['staff', 'case'],
+  'followup.html': ['staff', 'followup'],
+  'resolved.html': ['staff', 'resolved'],
 };
 const statePage = {
   'learner:home': 'learner.html',
@@ -29,95 +31,76 @@ const statePage = {
   'learner:note': 'message.html',
   'learner:sent': 'sent.html',
   'learner:okay': 'okay.html',
-  'teacher:dashboard': 'dashboard.html',
-  'teacher:case': 'case.html',
-  'teacher:followup': 'followup.html',
-  'teacher:resolved': 'resolved.html',
+  'staff:dashboard': 'dashboard.html',
+  'staff:case': 'case.html',
+  'staff:followup': 'followup.html',
+  'staff:resolved': 'resolved.html',
 };
 
 let [mode, screen] = pageState[currentPage] || ['learner', 'home'];
-let mood = 'Happy';
-let concern = 'Bullying or safety';
-let caseId = '024';
-let learnerMessage = 'Some older learners keep bothering me near the sports field.';
-
 const app = document.querySelector('#app');
-const teacherProfile = { name: 'Ms Kholofelo', className: 'Class 2B' };
 const brand = `<div class="brand"><img src="hublio-logo.jpg" alt="Hublio" class="brand-logo" /></div>`;
 
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function api(path, options = {}) {
+  const res = await fetch(`${API}${path}`, {
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    ...options,
+  });
+  const body = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    location.href = 'login.html';
+    throw new Error('Please sign in');
+  }
+  if (!res.ok) throw new Error(body.error || 'Request failed');
+  return body;
+}
+
+async function loadMe() {
+  const res = await fetch(`${API}/auth/me`, { credentials: 'same-origin' });
+  const body = await res.json();
+  me = body.user;
+}
+
 async function loadData() {
-  try {
-    const res = await fetch(`${API}/dashboard`);
-    if (!res.ok) return;
-    db = await res.json();
-    alerts = db.alerts || alerts;
-    stats = db.stats || stats;
-    if (db.teacher) {
-      teacherProfile.name = db.teacher.name;
-      teacherProfile.className = db.teacher.className;
-    }
-    if (db.moodBreakdown) {
-      moodBreakdown = db.moodBreakdown.map((m) => [m.mood, m.count, m.percent, m.color]);
-    }
-  } catch {
-    alerts = [
-      { id: '024', name: 'Thabiso Maboe', grade: 'Class 2B', type: 'Feeling unsafe', time: '8 min ago', level: 'Critical', color: 'red', concern: 'Bullying or safety', message: learnerMessage },
-      { id: '031', name: 'Sipho K.', grade: 'Class 2B', type: 'Feeling anxious', time: '24 min ago', level: 'Attention', color: 'orange', concern: 'Friends or classmates', message: '' },
-      { id: '018', name: 'Amahle N.', grade: 'Grade 4A', type: 'Feeling sick', time: '42 min ago', level: 'New', color: 'purple', concern: 'I feel sick', message: '' },
-    ];
-  }
-}
-
-async function submitCheckIn(isOkay) {
-  const textarea = document.querySelector('.textarea');
-  const message = textarea ? textarea.value : learnerMessage;
-  try {
-    await fetch(`${API}/checkin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mood, isOkay, concern, message }),
-    });
-    await loadData();
-  } catch {
-    /* offline demo */
-  }
-}
-
-async function resolveAlert(id) {
-  try {
-    await fetch(`${API}/alerts/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'Resolved' }),
-    });
-    await loadData();
-  } catch {
-    /* offline demo */
-  }
-}
-
-function setMode(m) {
-  mode = m;
-  screen = m === 'learner' ? 'home' : 'dashboard';
-  render();
+  db = await api('/dashboard');
+  alerts = db.alerts || [];
+  cases = db.cases || [];
+  stats = db.stats || stats;
+  moodBreakdown = (db.moodBreakdown || []).map((m) => [m.mood, m.count, m.percent, m.color]);
 }
 
 function todayLabel() {
   return new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function badgeClass(status) {
+  if (status === 'Resolved') return 'green';
+  if (status === 'Escalated' || status === 'Critical') return 'red';
+  if (status === 'Acknowledged' || status === 'Monitoring' || status === 'Attention') return 'orange';
+  return 'purple';
+}
+
 function phone(content, nav = true) {
-  return `<div class="phone-wrap"><div class="phone"><div class="phone-head">${brand}<span class="avatar">👦🏾</span></div><div class="phone-content">${content}</div>${nav ? `<div class="bottom-nav"><b>⌂<br>Home</b><span>✓<br>Check-in</span><span>▱<br>Inbox</span><span>♧<br>Profile</span></div>` : ''}</div></div><div class="demo-note">Powered by Mivali</div>`;
+  const learnerName = me?.learner?.name || me?.name || 'Learner';
+  return `<div class="phone-wrap"><div class="phone"><div class="phone-head">${brand}<span class="avatar">👦</span></div><div class="phone-content">${content}</div>${nav ? `<div class="bottom-nav"><b>⌂<br>Home</b><span>✓<br>Check-in</span><span>▱<br>Inbox</span><span>♧<br>Profile</span></div>` : ''}</div></div><div class="demo-note">Signed in as ${esc(learnerName)}</div>`;
 }
 
 function learner() {
-  const learnerName = db?.learner?.name || 'Thabiso Maboe';
-  const title = teacherProfile.name.split(' ')[0];
-  const teacherName = title === 'Mr' || title === 'Ms' ? teacherProfile.name : `Ms ${teacherProfile.name}`;
+  const learnerName = me?.learner?.name || me?.name || 'Learner';
+  const teacherName = db?.teacher?.name || 'your teacher';
 
   if (screen === 'home')
     return phone(
-      `<span class="eyebrow">${new Date().toLocaleDateString(undefined, { weekday: 'long' })} check-in</span><h1>Good morning,<br>${learnerName} ⭐</h1><p>How are you feeling today?</p><div class="moods">${[
+      `<span class="eyebrow">${new Date().toLocaleDateString(undefined, { weekday: 'long' })} check-in</span><h1>Good morning,<br>${esc(learnerName)} ⭐</h1><p>How are you feeling today?</p><div class="moods">${[
         ['😊', 'Happy'],
         ['😐', 'Okay'],
         ['😴', 'Tired'],
@@ -129,7 +112,7 @@ function learner() {
           (x) =>
             `<button class="mood ${mood === x[1] ? 'selected' : ''}" onclick="mood='${x[1]}';render()"><span>${x[0]}</span>${x[1]}</button>`
         )
-        .join('')}</div><div class="big-actions"><button class="btn btn-safe" onclick="handleOkay()">I'M OKAY<small>Everything is going great!</small></button><button class="btn btn-alert" onclick="screen='concern';render()">I'M NOT OKAY<small>I'd like to talk to a teacher</small></button><button class="link" onclick="setMode('teacher')">View teacher demo →</button></div>`
+        .join('')}</div><div class="big-actions"><button class="btn btn-safe" onclick="handleOkay()">I'M OKAY<small>Everything is going great!</small></button><button class="btn btn-alert" onclick="screen='concern';render()">I'M NOT OKAY<small>I'd like to talk to a teacher</small></button><button class="link" onclick="logout()">Sign out</button></div>`
     );
   if (screen === 'concern')
     return phone(
@@ -143,92 +126,342 @@ function learner() {
       ]
         .map(
           (x) =>
-            `<button class="concern ${concern === x ? 'selected' : ''}" onclick="concern='${x}';render()">${x === 'Bullying or safety' ? '🛡️' : x === 'School work' ? '📚' : x === 'I feel sick' ? '🤒' : '💬'} &nbsp; ${x}</button>`
+            `<button class="concern ${concern === x ? 'selected' : ''}" onclick="concern='${x.replace(/'/g, "\\'")}';render()">${x === 'Bullying or safety' ? '🛡️' : x === 'School work' ? '📚' : x === 'I feel sick' ? '🤒' : '💬'} &nbsp; ${x}</button>`
         )
         .join('')}</div><div class="big-actions"><button class="btn btn-primary" onclick="screen='note';render()">Continue →</button></div>`,
       false
     );
   if (screen === 'note')
     return phone(
-      `<button class="back" onclick="screen='concern';render()">←</button><span class="eyebrow" style="margin-top:25px">Step 2 of 2 · Optional</span><h1>Would you like to tell us more?</h1><p>You can leave this blank. A teacher will still check on you.</p><textarea class="textarea" placeholder="Write here if you want to…">${learnerMessage}</textarea><div class="big-actions"><button class="btn btn-alert" onclick="handleSendCheckIn()">Send my check-in</button><button class="btn btn-light" onclick="handleSendCheckIn()">Skip message</button></div>`,
+      `<button class="back" onclick="screen='concern';render()">←</button><span class="eyebrow" style="margin-top:25px">Step 2 of 2 · Optional</span><h1>Would you like to tell us more?</h1><p>You can leave this blank. Keep it short — a teacher will still check on you.</p><textarea class="textarea" maxlength="280" placeholder="Write here if you want to…">${esc(learnerMessage)}</textarea><div class="big-actions"><button class="btn btn-alert" onclick="handleSendCheckIn()">Send my check-in</button><button class="btn btn-light" onclick="handleSendCheckIn(true)">Skip message</button></div>`,
       false
     );
   if (screen === 'sent')
     return phone(
-      `<div class="success"><div class="check">✓</div><span class="eyebrow">Check-in sent</span><h1>Thank you for telling us.</h1><p>${teacherName} has been notified and will check in with you soon.</p><div style="height:24px"></div><button class="btn btn-primary" onclick="setMode('teacher')">See the teacher's alert →</button><button class="link" style="display:block;margin:16px auto" onclick="screen='home';render()">Back to home</button></div>`,
+      `<div class="success"><div class="check">✓</div><span class="eyebrow">Check-in sent</span><h1>Thank you for telling us.</h1><p>${esc(teacherName)} has been notified and will check in with you soon.</p><div style="height:24px"></div><button class="btn btn-primary" onclick="screen='home';render()">Back to home</button></div>`,
       false
     );
   return phone(
-    `<div class="success"><div class="check">✓</div><h1>Glad you're okay!</h1><p>Your check-in has been saved. Have a brilliant day, ${learnerName}.</p><div style="height:24px"></div><button class="btn btn-safe" onclick="screen='home';render()">Done</button></div>`,
+    `<div class="success"><div class="check">✓</div><h1>Glad you're okay!</h1><p>Your check-in has been saved. Have a brilliant day, ${esc(learnerName)}.</p><div style="height:24px"></div><button class="btn btn-safe" onclick="screen='home';render()">Done</button></div>`,
     false
   );
 }
 
-function sidebar(active = 'Dashboard') {
-  return `<aside class="sidebar">${brand}<nav class="nav">${['Dashboard', 'Learners', 'Alerts', 'Reports', 'Settings']
-    .map(
-      (x) =>
-        `<button class="${active === x ? 'active' : ''}">${x === 'Dashboard' ? '▦' : x === 'Learners' ? '♙' : x === 'Alerts' ? '♧' : x === 'Reports' ? '▥' : '⚙'} &nbsp; ${x}</button>`
-    )
-    .join('')}</nav><div class="profile"><span class="avatar">👩🏾</span><div><b>${teacherProfile.name}</b><br><small>Teacher · ${teacherProfile.className}</small></div></div></aside>`;
+function navItems() {
+  if (me?.role === 'admin') return ['Dashboard', 'Learners', 'Teachers', 'Classes', 'Alerts', 'Cases', 'Reports', 'Audit', 'Settings'];
+  return ['Dashboard', 'Learners', 'Alerts', 'Cases', 'Reports', 'Settings'];
 }
 
-function teacher() {
+function sidebar(active) {
+  const name = me?.name || db?.teacher?.name || 'Staff';
+  const roleLabel = me?.role === 'admin' ? 'School admin' : `Teacher · ${esc(db?.teacher?.className || '')}`;
+  return `<aside class="sidebar">${brand}<nav class="nav">${navItems()
+    .map((x) => `<button class="${active === x ? 'active' : ''}" onclick="teacherNav='${x}';screen='dashboard';render()">${icon(x)} &nbsp; ${x}</button>`)
+    .join('')}</nav><div class="profile"><span class="avatar">👩</span><div><b>${esc(name)}</b><br><small>${roleLabel}</small><br><button class="link" onclick="logout()">Sign out</button></div></div></aside>`;
+}
+
+function icon(name) {
+  return { Dashboard: '▦', Learners: '♙', Teachers: '♟', Classes: '▣', Alerts: '♧', Cases: '▤', Reports: '▥', Audit: '📋', Settings: '⚙' }[name] || '•';
+}
+
+function alertRow(a) {
+  return `<div class="alert" onclick="openCase('${esc(a.caseId || a.id)}')"><span class="learner-id">${esc(a.learnerCode || a.id)}</span><div><strong>${esc(a.name)} · ${esc(a.type)}</strong><small>${esc(a.grade)} · ${esc(a.time)} · ${esc(a.status)}</small></div><span class="badge ${a.color || badgeClass(a.level)}">${esc(a.level)}</span></div>`;
+}
+
+function staffDashboard() {
+  const tName = me?.name || 'there';
+  const openAlerts = alerts.filter((a) => a.status !== 'Resolved');
+  return `<div class="topbar"><div><span class="eyebrow">${esc(db?.school?.name || 'School')} · ${me?.role === 'admin' ? 'Admin' : 'Teacher'} portal</span><h1>Dashboard overview</h1></div></div><section class="hero"><div><span class="eyebrow" style="color:#bfaee7">Class wellness</span><h2>Good morning, ${esc(tName)}</h2><p>Here's how your learners are doing today.</p></div><div class="date-pill">${todayLabel()}</div></section><div class="stats"><div class="stat"><div class="icon green">✓</div><strong>${stats.feelingOkay}</strong><span>Feeling okay</span></div><div class="stat"><div class="icon red">!</div><strong>${stats.activeAlerts}</strong><span>Active alerts</span></div><div class="stat"><div class="icon purple">⌁</div><strong>${stats.checkedInPercent}%</strong><span>Checked in</span></div><div class="stat"><div class="icon orange">◷</div><strong>${stats.awaitingFollowUp}</strong><span>Open cases</span></div></div><div class="grid"><section class="panel"><div class="panel-head"><h3>Active alerts</h3><button class="link" onclick="teacherNav='Alerts';render()">View all</button></div>${openAlerts.length ? openAlerts.map(alertRow).join('') : '<p class="empty">No active alerts.</p>'}</section><section class="panel"><div class="panel-head"><h3>Today's check-ins</h3></div>${moodBreakdown
+    .map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x[0])}</span><b>${x[1]}</b></div><div class="bar"><i style="width:${x[2]}%;background:${x[3]}"></i></div></div>`)
+    .join('') || '<p class="empty">No check-ins yet.</p>'}</section></div>`;
+}
+
+function table(headers, rows) {
+  return `<div class="table-wrap"><table class="data-table"><thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="8">No records yet.</td></tr>'}</tbody></table></div>`;
+}
+
+function learnersView() {
+  const rows = (db.learners || [])
+    .map(
+      (l) =>
+        `<tr><td>${esc(l.code)}</td><td>${esc(l.name)}</td><td>${esc(l.grade)}</td><td>${esc(l.className)}</td></tr>`
+    )
+    .join('');
+  return `<div class="topbar"><div><span class="eyebrow">Directory</span><h1>Learners</h1></div></div><section class="panel">${table(['Code', 'Name', 'Grade', 'Class'], rows)}
+    <form class="inline-form" onsubmit="return createLearner(event)">
+      <h3>Add learner</h3>
+      <div class="fields">
+        <div class="field"><label>Name</label><input name="name" required></div>
+        <div class="field"><label>Code</label><input name="code" placeholder="032"></div>
+        <div class="field"><label>Grade</label><input name="grade" placeholder="Grade 5B"></div>
+        <div class="field"><label>Class</label><input name="className" placeholder="Class 2B"></div>
+        <div class="field"><label>PIN</label><input name="pin" value="1234"></div>
+      </div>
+      <button class="btn btn-primary" type="submit">Save learner</button>
+    </form></section>`;
+}
+
+function teachersView() {
+  const rows = (db.teachers || []).map((t) => `<tr><td>${esc(t.name)}</td><td>${esc(t.email)}</td><td>${esc(t.className)}</td></tr>`).join('');
+  return `<div class="topbar"><div><span class="eyebrow">Administration</span><h1>Teachers</h1></div></div><section class="panel">${table(['Name', 'Email', 'Class'], rows)}
+    <form class="inline-form" onsubmit="return createTeacher(event)">
+      <h3>Add teacher</h3>
+      <div class="fields">
+        <div class="field"><label>Name</label><input name="name" required></div>
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Class</label><input name="className"></div>
+        <div class="field"><label>Temp password</label><input name="password" value="demo"></div>
+      </div>
+      <button class="btn btn-primary" type="submit">Save teacher</button>
+    </form></section>`;
+}
+
+function classesView() {
+  const rows = (db.classes || []).map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.grade)}</td><td>${esc(c.teacherId)}</td></tr>`).join('');
+  return `<div class="topbar"><div><span class="eyebrow">Administration</span><h1>Classes / grades</h1></div></div><section class="panel">${table(['Class', 'Grade', 'Teacher ID'], rows)}
+    <form class="inline-form" onsubmit="return createClass(event)">
+      <h3>Add class</h3>
+      <div class="fields">
+        <div class="field"><label>Name</label><input name="name" required></div>
+        <div class="field"><label>Grade</label><input name="grade"></div>
+        <div class="field"><label>Teacher ID</label><input name="teacherId" value="1"></div>
+      </div>
+      <button class="btn btn-primary" type="submit">Save class</button>
+    </form></section>`;
+}
+
+function alertsView() {
+  return `<div class="topbar"><div><span class="eyebrow">Response</span><h1>Alerts</h1></div></div><section class="panel">${alerts.map(alertRow).join('') || '<p class="empty">No alerts.</p>'}</section>`;
+}
+
+function casesView() {
+  const rows = (cases || [])
+    .map(
+      (c) =>
+        `<tr class="click-row" onclick="openCase('${esc(c.id)}')"><td>${esc(c.id)}</td><td>${esc(c.learnerName)}</td><td>${esc(c.concern)}</td><td><span class="badge ${badgeClass(c.status)}">${esc(c.status)}</span></td></tr>`
+    )
+    .join('');
+  return `<div class="topbar"><div><span class="eyebrow">Case management</span><h1>Cases</h1></div></div><section class="panel">${table(['Case', 'Learner', 'Concern', 'Status'], rows)}</section>`;
+}
+
+function reportsView() {
+  const r = db.reports || {};
+  return `<div class="topbar"><div><span class="eyebrow">Reporting</span><h1>Basic activity</h1></div></div><div class="stats"><div class="stat"><strong>${r.totalCheckIns || 0}</strong><span>Check-ins</span></div><div class="stat"><strong>${r.totalAlerts || 0}</strong><span>Alerts</span></div><div class="stat"><strong>${r.openCases || 0}</strong><span>Open cases</span></div><div class="stat"><strong>${r.escalated || 0}</strong><span>Escalated</span></div></div>
+    <div class="grid"><section class="panel"><h3>By concern</h3>${(r.byConcern || []).map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x.label)}</span><b>${x.count}</b></div></div>`).join('') || '<p class="empty">No data yet.</p>'}</section>
+    <section class="panel"><h3>By case status</h3>${(r.byStatus || []).map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x.label)}</span><b>${x.count}</b></div></div>`).join('') || '<p class="empty">No data yet.</p>'}</section></div>`;
+}
+
+function auditView() {
+  const rows = (db.audit || [])
+    .map((a) => `<tr><td>${esc(a.at).replace('T', ' ').slice(0, 16)}</td><td>${esc(a.actor)}</td><td>${esc(a.role)}</td><td>${esc(a.action)}</td><td>${esc(a.detail)}</td></tr>`)
+    .join('');
+  return `<div class="topbar"><div><span class="eyebrow">Accountability</span><h1>Audit trail</h1></div></div><section class="panel">${table(['When', 'Who', 'Role', 'Action', 'Detail'], rows)}</section>`;
+}
+
+function settingsView() {
+  const s = db.school || {};
+  if (me?.role !== 'admin') {
+    return `<div class="topbar"><div><span class="eyebrow">Account</span><h1>Settings</h1></div></div><section class="panel"><p>Signed in as <b>${esc(me?.name)}</b> (${esc(me?.role)}).</p><p>Learner records are limited to your assigned class.</p></section>`;
+  }
+  return `<div class="topbar"><div><span class="eyebrow">School administration</span><h1>School configuration</h1></div></div><section class="panel">
+    <form class="inline-form" onsubmit="return saveSchool(event)">
+      <div class="fields">
+        <div class="field"><label>School name</label><input name="name" value="${esc(s.name)}" required></div>
+        <div class="field"><label>Check-in window</label><input name="checkInWindow" value="${esc(s.checkInWindow)}"></div>
+        <div class="field full"><label><input type="checkbox" name="escalateSafetyImmediately" ${s.escalateSafetyImmediately ? 'checked' : ''}> Auto-escalate bullying / safety and home-or-family concerns</label></div>
+      </div>
+      <button class="btn btn-primary" type="submit">Save configuration</button>
+    </form></section>`;
+}
+
+function caseView() {
+  const cse = cases.find((c) => c.id === caseId) || cases.find((c) => c.alertId === caseId) || cases[0];
+  const a = alerts.find((x) => x.caseId === cse?.id || x.id === cse?.alertId) || alerts[0];
+  if (!cse && !a) return `<section class="panel"><p>No case selected.</p></section>`;
+  const item = cse || {};
+  const msg = item.message || a?.message || '';
+  const history = (item.history || []).map((h) => `<li><b>${esc(h.event)}</b><small> · ${esc(h.by)} · ${esc(h.at).replace('T', ' ').slice(0, 16)}</small>${h.note ? `<p>${esc(h.note)}</p>` : ''}</li>`).join('');
+  return `<div class="topbar"><div><button class="back" onclick="teacherNav='Cases';screen='dashboard';render()">←</button><span class="eyebrow" style="margin-left:15px">Case file · ${esc(item.id || a.id)}</span><h1 style="margin-top:12px">${esc(a?.type || item.concern || 'Learner case')}</h1></div><span class="badge ${badgeClass(item.status || a?.status)}">${esc(item.status || a?.status)}</span></div>
+    <div class="case-wrap"><div class="case-card"><div class="panel-head"><div><h3>${esc(item.learnerName || a?.name)}</h3><p>${esc(item.grade || a?.grade)} · Code ${esc(item.learnerCode || a?.learnerCode)}</p></div><span class="learner-id">${esc(item.learnerCode || a?.id)}</span></div>
+    <div class="case-meta"><span class="badge orange">${esc(item.concern || a?.concern)}</span><span class="badge ${badgeClass(a?.level)}">${esc(a?.level || 'Alert')}</span></div>
+    <div class="case-note"><small>LEARNER'S OPTIONAL MESSAGE</small><p>${msg ? `"${esc(msg)}"` : 'No message provided.'}</p></div>
+    <h3>Case history</h3><ul class="timeline">${history || '<li>No history yet.</li>'}</ul>
+    <div class="big-actions" style="max-width:360px;margin-top:25px">
+      ${a?.status === 'Open' ? `<button class="btn btn-primary" onclick="acknowledgeCase('${esc(a.id)}','${esc(item.id)}')">Acknowledge & start follow-up</button>` : `<button class="btn btn-primary" onclick="screen='followup';render()">Record follow-up</button>`}
+    </div></div></div>`;
+}
+
+function followUpView() {
+  const cse = cases.find((c) => c.id === caseId) || cases[0];
+  return `<div class="topbar"><div><span class="eyebrow">Case file · ${esc(cse?.id)}</span><h1>Log learner follow-up</h1></div><span class="badge purple">${esc(cse?.status)}</span></div>
+    <div class="case-wrap"><div class="case-card"><h3>What action was taken?</h3><p>Record only the information needed to support the learner.</p>
+    <form onsubmit="return saveFollowUp(event)">
+      <div class="fields">
+        <div class="field"><label>FOLLOW-UP TYPE</label><select name="type"><option>Private learner conversation</option><option>Counsellor referral</option><option>Guardian contacted</option><option>Duty teacher monitoring</option></select></div>
+        <div class="field"><label>OUTCOME</label><select name="outcome"><option>Resolved locally</option><option>Needs monitoring</option><option>Escalated</option></select></div>
+        <div class="field full"><label>PRIVATE CASE NOTE</label><textarea name="note" rows="5" maxlength="2000" placeholder="Keep notes factual and minimal."></textarea></div>
+      </div>
+      <div class="big-actions" style="max-width:360px"><button class="btn btn-safe" type="submit">Save follow-up</button><button class="btn btn-light" type="button" onclick="screen='case';render()">Return to case</button></div>
+    </form></div></div>`;
+}
+
+function resolvedView() {
+  const cse = cases.find((c) => c.id === caseId) || {};
+  return `<div class="topbar"><div><span class="eyebrow">Case file · ${esc(cse.id)}</span><h1>Follow-up saved</h1></div></div><div class="case-wrap"><div class="case-card success" style="min-height:420px;display:flex;flex-direction:column;justify-content:center"><div class="check">✓</div><h1>Case updated</h1><p>Status is now <b>${esc(cse.status || 'updated')}</b>.</p><button class="btn btn-primary" style="max-width:360px;margin:24px auto 0;width:100%" onclick="teacherNav='Dashboard';screen='dashboard';render()">Return to dashboard</button></div></div>`;
+}
+
+function staff() {
   let content = '';
-  const tName = teacherProfile.name;
-
-  if (screen === 'dashboard')
-    content = `<div class="topbar"><div><span class="eyebrow">Teacher portal</span><h1>Dashboard overview</h1></div><div class="switch"><button onclick="setMode('learner')">Learner</button><button class="active">Teacher</button></div></div><section class="hero"><div><span class="eyebrow" style="color:#bfaee7">Class wellness</span><h2>Good morning, ${tName}</h2><p>Here's how your learners are doing today.</p></div><div class="date-pill">${todayLabel()}</div></section><div class="stats"><div class="stat"><div class="icon green">✓</div><strong>${stats.feelingOkay}</strong><span>Feeling okay</span></div><div class="stat"><div class="icon red">!</div><strong>${stats.activeAlerts}</strong><span>Active alerts</span></div><div class="stat"><div class="icon purple">⌁</div><strong>${stats.checkedInPercent}%</strong><span>Checked in</span></div><div class="stat"><div class="icon orange">◷</div><strong>${stats.awaitingFollowUp}</strong><span>Awaiting follow-up</span></div></div><div class="grid"><section class="panel"><div class="panel-head"><h3>Active alerts</h3><button class="link">View all</button></div>${alerts
-      .map(
-        (a) =>
-          `<div class="alert" onclick="caseId='${a.id}';screen='case';render()"><span class="learner-id">${a.id}</span><div><strong>${a.name} · ${a.type}</strong><small>${a.grade} · ${a.time}</small></div><span class="badge ${a.color}">${a.level}</span></div>`
-      )
-      .join('')}</section><section class="panel"><div class="panel-head"><h3>Today's check-ins</h3></div>${moodBreakdown
-      .map(
-        (x) =>
-          `<div class="bar-row"><div class="bar-label"><span>${x[0]}</span><b>${x[1]}</b></div><div class="bar"><i style="width:${x[2]}%;background:${x[3]}"></i></div></div>`
-      )
-      .join('')}</section></div>`;
-  else if (screen === 'case') {
-    const a = alerts.find((x) => x.id === caseId) || alerts[0];
-    const msg = a.message || learnerMessage;
-    content = `<div class="topbar"><div><button class="back" onclick="screen='dashboard';render()">←</button><span class="eyebrow" style="margin-left:15px">Case file · Learner ${a.id}</span><h1 style="margin-top:12px">${a.type}</h1></div><span class="badge red">Action required</span></div><div class="case-wrap"><div class="case-card"><div class="panel-head"><div><h3>${a.name}</h3><p>${a.grade} · Submitted today</p></div><span class="learner-id">${a.id}</span></div><div class="case-meta"><span class="badge orange">${a.concern || concern}</span><span class="badge purple">Not yet acknowledged</span></div><div class="case-note"><small>LEARNER'S OPTIONAL MESSAGE</small><p>${msg ? `"${msg}"` : 'No message provided.'}</p></div><h3>Recommended next step</h3><p>Speak with the learner privately as soon as possible. Confirm their immediate safety before recording a follow-up.</p><div class="big-actions" style="max-width:360px;margin-top:25px"><button class="btn btn-primary" onclick="screen='followup';render()">Acknowledge & start follow-up</button></div></div></div>`;
-  } else if (screen === 'followup')
-    content = `<div class="topbar"><div><span class="eyebrow">Case file · Learner ${caseId}</span><h1>Log learner follow-up</h1></div><span class="badge purple">Acknowledged</span></div><div class="case-wrap"><div class="case-card"><h3>What action was taken?</h3><p>Record only the information needed to support the learner.</p><div class="fields"><div class="field"><label>FOLLOW-UP TYPE</label><select><option>Private learner conversation</option><option>Counsellor referral</option><option>Guardian contacted</option></select></div><div class="field"><label>OUTCOME</label><select><option>Resolved locally</option><option>Needs monitoring</option><option>Escalated</option></select></div><div class="field full"><label>PRIVATE CASE NOTE</label><textarea rows="5">Spoke with learner privately. Duty teacher will monitor and address the learners involved.</textarea></div></div><div class="big-actions" style="max-width:360px"><button class="btn btn-safe" onclick="resolveAlert('${caseId}');screen='resolved';render()">Complete resolution</button><button class="btn btn-light" onclick="screen='case';render()">Save and return later</button></div></div></div>`;
-  else
-    content = `<div class="topbar"><div><span class="eyebrow">Case file · Learner ${caseId}</span><h1>Case resolution complete</h1></div></div><div class="case-wrap"><div class="case-card success" style="min-height:520px;display:flex;flex-direction:column;justify-content:center"><div class="check">✓</div><h1>Follow-up completed successfully</h1><p>Learner wellbeing signal logged, assessed and resolution state stored.</p><div class="case-note" style="max-width:520px;margin:25px auto;text-align:left;width:100%"><b>RESOLUTION TYPE</b><span style="float:right;color:var(--green);font-weight:800">RESOLVED LOCALLY</span><p>Completed by ${tName}</p></div><button class="btn btn-primary" style="max-width:360px;margin:0 auto;width:100%" onclick="screen='dashboard';render()">Return to dashboard</button></div></div>`;
-
-  return `<div class="shell">${sidebar(screen === 'dashboard' ? 'Dashboard' : 'Alerts')}<main class="main">${content}</main></div><div class="demo-note">Powered by Mivali</div>`;
+  if (screen === 'case') content = caseView();
+  else if (screen === 'followup') content = followUpView();
+  else if (screen === 'resolved') content = resolvedView();
+  else {
+    const views = {
+      Dashboard: staffDashboard,
+      Learners: learnersView,
+      Teachers: teachersView,
+      Classes: classesView,
+      Alerts: alertsView,
+      Cases: casesView,
+      Reports: reportsView,
+      Audit: auditView,
+      Settings: settingsView,
+    };
+    content = (views[teacherNav] || staffDashboard)();
+  }
+  const side = screen === 'dashboard' ? teacherNav : 'Cases';
+  return `<div class="shell">${sidebar(side)}<main class="main">${content}</main></div><div class="demo-note">Phase 3 MVP · ${esc(me?.role)}</div>`;
 }
 
 function render() {
-  const target = statePage[`${mode}:${screen}`];
-  if (target && location.pathname.split('/').pop() !== target) history.pushState({ mode, screen }, '', target);
-  app.innerHTML = mode === 'learner' ? learner() : teacher();
-
-  const teacherAvatar = app.querySelector('.sidebar .profile .avatar');
-  if (teacherAvatar) {
-    teacherAvatar.innerHTML = `<img src="mario.jpeg" alt="${teacherProfile.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='👩🏾'">`;
-    teacherAvatar.style.overflow = 'hidden';
-  }
+  if (!app) return;
+  const key = `${mode}:${screen}`;
+  const target = statePage[key];
+  if (target && location.pathname.split('/').pop() !== target) history.pushState({ mode, screen, teacherNav, caseId }, '', target);
+  app.innerHTML = mode === 'learner' ? learner() : staff();
   window.scrollTo(0, 0);
 }
 
-window.addEventListener('popstate', () => {
-  const p = location.pathname.split('/').pop();
-  [mode, screen] = pageState[p] || ['learner', 'home'];
+window.openCase = (id) => {
+  caseId = id;
+  screen = 'case';
   render();
-});
+};
+
+window.acknowledgeCase = async (alertId, id) => {
+  await api(`/alerts/${alertId}`, { method: 'PUT', body: JSON.stringify({ acknowledge: true }) });
+  caseId = id;
+  await loadData();
+  screen = 'followup';
+  render();
+};
+
+window.saveFollowUp = async (event) => {
+  event.preventDefault();
+  const form = event.target;
+  await api(`/cases/${caseId}/followups`, {
+    method: 'POST',
+    body: JSON.stringify({ type: form.type.value, outcome: form.outcome.value, note: form.note.value }),
+  });
+  await loadData();
+  screen = 'resolved';
+  render();
+  return false;
+};
+
+window.createLearner = async (event) => {
+  event.preventDefault();
+  const f = event.target;
+  await api('/learners', {
+    method: 'POST',
+    body: JSON.stringify({ name: f.name.value, code: f.code.value, grade: f.grade.value, className: f.className.value, pin: f.pin.value }),
+  });
+  await loadData();
+  render();
+  return false;
+};
+
+window.createTeacher = async (event) => {
+  event.preventDefault();
+  const f = event.target;
+  await api('/teachers', {
+    method: 'POST',
+    body: JSON.stringify({ name: f.name.value, email: f.email.value, className: f.className.value, password: f.password.value }),
+  });
+  await loadData();
+  render();
+  return false;
+};
+
+window.createClass = async (event) => {
+  event.preventDefault();
+  const f = event.target;
+  await api('/classes', {
+    method: 'POST',
+    body: JSON.stringify({ name: f.name.value, grade: f.grade.value, teacherId: f.teacherId.value }),
+  });
+  await loadData();
+  render();
+  return false;
+};
+
+window.saveSchool = async (event) => {
+  event.preventDefault();
+  const f = event.target;
+  await api('/school', {
+    method: 'PUT',
+    body: JSON.stringify({
+      name: f.name.value,
+      checkInWindow: f.checkInWindow.value,
+      escalateSafetyImmediately: f.escalateSafetyImmediately.checked,
+    }),
+  });
+  await loadData();
+  render();
+  return false;
+};
+
+window.logout = async () => {
+  await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'same-origin' });
+  location.href = 'login.html';
+};
 
 window.handleOkay = async () => {
-  await submitCheckIn(true);
+  await api('/checkin', { method: 'POST', body: JSON.stringify({ mood, isOkay: true }) });
   screen = 'okay';
   render();
 };
-window.handleSendCheckIn = async () => {
-  await submitCheckIn(false);
+
+window.handleSendCheckIn = async (skip) => {
+  const textarea = document.querySelector('.textarea');
+  const message = skip ? '' : textarea ? textarea.value : learnerMessage;
+  await api('/checkin', { method: 'POST', body: JSON.stringify({ mood, isOkay: false, concern, message }) });
   screen = 'sent';
   render();
 };
 
-loadData().then(render);
+window.addEventListener('popstate', () => {
+  const p = location.pathname.split('/').pop();
+  [mode, screen] = pageState[p] || [mode, screen];
+  render();
+});
+
+(async function boot() {
+  await loadMe();
+  const staffPage = mode === 'staff' || currentPage === 'dashboard.html' || currentPage === 'case.html' || currentPage === 'followup.html' || currentPage === 'resolved.html';
+  if (!me) {
+    location.href = 'login.html';
+    return;
+  }
+  if (staffPage && me.role === 'learner') {
+    location.href = 'index.html';
+    return;
+  }
+  if (!staffPage && me.role !== 'learner') {
+    location.href = 'dashboard.html';
+    return;
+  }
+  mode = me.role === 'learner' ? 'learner' : 'staff';
+  await loadData();
+  render();
+})();

@@ -1,14 +1,8 @@
-# Hublio — Wellness Check-ins
+# Hublio — Phase 3 MVP
 
-Learner wellness check-in and teacher dashboard. **Powered by Mivali.**
-
-## Location
-
-`C:\Projects\Hublio`
+Learner wellbeing check-in, teacher alerts, case management, and school administration. **Powered by Mivali.**
 
 ## Run locally
-
-Double-click **`Start Hublio.bat`** or:
 
 ```bat
 cd C:\Projects\Hublio
@@ -17,39 +11,39 @@ node api/server.js
 
 Open **http://localhost:3000/login.html**
 
-## Screens
+### Demo accounts
 
-| Role | URL | Flow |
-|------|-----|------|
-| **Login** | `/login.html` | Choose learner or teacher |
-| **Learner** | `/` | Mood check-in → OK / Not OK → concern → message → sent |
-| **Teacher** | `/dashboard.html` | Stats, alerts, mood breakdown |
-| **Case** | `/case.html` | Alert detail → follow-up → resolved |
+| Role | Sign-in | Secret |
+|------|---------|--------|
+| Learner | code `024` (also `031`, `018`) | PIN `1234` |
+| Teacher | `kholofelo@school.local` | `demo` |
+| School admin | `admin@demo.school` | `demo` |
 
-Toggle **Learner / Teacher** on the dashboard switch.
+## What this MVP covers
 
-## Database (when you're ready)
+- Role-based sign-in (learner / teacher / school admin)
+- Learner **I'm Okay** / **I'm Not Okay** check-in, concern categories, optional 280-character message
+- Teacher alerts, acknowledgement, follow-up notes, case status, basic escalation
+- School admin: school config, teachers, learners, classes/grades
+- Dashboard, basic reporting, audit trail
+- Session cookies, hashed passwords/PINs, staff-only learner records
 
-SQL schema: [`database/schema.sql`](database/schema.sql)
-
-Tables: `Teachers`, `Learners`, `CheckIns`, `Alerts`, `FollowUps`
-
-Current demo uses JSON file API at [`api/data.json`](api/data.json). Replace `api/server.js` endpoints with SQL when database is connected.
+Not in this MVP: AI counselling, parent apps, advanced analytics, SMS gateways.
 
 ## API
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/api/dashboard` | Teacher dashboard data |
-| POST | `/api/checkin` | Submit learner check-in |
-| PUT | `/api/alerts/:id` | Update alert / resolve case |
+| POST | `/api/auth/login` | Sign in |
+| POST | `/api/auth/logout` | Sign out |
+| GET | `/api/auth/me` | Current user |
+| GET | `/api/dashboard` | Role-scoped dashboard |
+| POST | `/api/checkin` | Learner check-in |
+| PUT | `/api/alerts/:id` | Acknowledge / update alert |
+| POST | `/api/cases/:id/followups` | Follow-up + status / escalation |
+| POST | `/api/teachers` | Admin: add teacher |
+| POST | `/api/learners` | Admin/teacher: add learner |
+| POST | `/api/classes` | Admin: add class |
+| PUT | `/api/school` | Admin: school configuration |
 
-## Project structure
-
-```
-Hublio/
-├── wwwroot/          Frontend (HTML, CSS, JS)
-├── api/              Node server + JSON data store
-├── database/         SQL schema for production
-└── Start Hublio.bat
-```
+Production SQL target: [`database/schema.sql`](database/schema.sql). Demo data: [`api/data.json`](api/data.json).

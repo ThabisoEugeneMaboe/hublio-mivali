@@ -1,85 +1,246 @@
 {
-  "teacher": {
-    "id": 1,
-    "name": "Ms Kholofelo",
-    "className": "Class 2B",
-    "email": "kholofelo@school.local",
-    "avatarUrl": "mario.jpeg"
+  "school": {
+    "id": "sch-001",
+    "name": "Hublio Demo Primary",
+    "timezone": "Africa/Johannesburg",
+    "checkInWindow": "Weekday mornings",
+    "escalateSafetyImmediately": true
   },
-  "learner": {
-    "id": 1,
-    "code": "024",
-    "name": "Thabiso Maboe",
-    "grade": "Grade 5B",
-    "className": "Class 2B"
-  },
+  "teachers": [
+    {
+      "id": 1,
+      "name": "Ms Kholofelo",
+      "className": "Class 2B",
+      "email": "kholofelo@school.local",
+      "avatarUrl": "mario.jpeg"
+    }
+  ],
+  "learners": [
+    {
+      "id": 1,
+      "code": "024",
+      "name": "Thabiso Maboe",
+      "grade": "Grade 5B",
+      "className": "Class 2B",
+      "teacherId": 1
+    },
+    {
+      "id": 2,
+      "code": "031",
+      "name": "Sipho K.",
+      "grade": "Grade 5B",
+      "className": "Class 2B",
+      "teacherId": 1
+    },
+    {
+      "id": 3,
+      "code": "018",
+      "name": "Amahle N.",
+      "grade": "Grade 4A",
+      "className": "Grade 4A",
+      "teacherId": 1
+    },
+    {
+      "id": 4,
+      "code": "056",
+      "name": "Shirley",
+      "grade": "Grade 6b",
+      "className": "class eb",
+      "teacherId": 1
+    }
+  ],
+  "classes": [
+    {
+      "id": "cls-2b",
+      "name": "Class 2B",
+      "grade": "Grade 5B",
+      "teacherId": 1
+    },
+    {
+      "id": "cls-4a",
+      "name": "Grade 4A",
+      "grade": "Grade 4A",
+      "teacherId": 1
+    }
+  ],
+  "users": [
+    {
+      "id": "u-admin",
+      "role": "admin",
+      "name": "School Admin",
+      "email": "admin@demo.school",
+      "active": true,
+      "salt": "bd8d7aff3faca8a658a796e2abcad6bc",
+      "passwordHash": "0fa596b5366ea5146906755a78142cbc09bbe40d05486b9169b925dfabc983d7abcb3e963aab506cd2ad6d696faec29772b1b0185ff5d3b00e3dadbc1117e782"
+    },
+    {
+      "id": "u-teacher-1",
+      "role": "teacher",
+      "name": "Ms Kholofelo",
+      "email": "kholofelo@school.local",
+      "teacherId": 1,
+      "active": true,
+      "salt": "41be046d0d4c34065bd5fe9a3533b2c9",
+      "passwordHash": "e2ad84da2423a1279604b7444c45d812f3db48bb6816282fcecc8dade0c0b591074b0618814becaec2815760520a5759d03dfb9954a57e06c03dd78c91604d85"
+    },
+    {
+      "id": "u-learner-024",
+      "role": "learner",
+      "name": "Thabiso Maboe",
+      "loginCode": "024",
+      "learnerId": 1,
+      "active": true,
+      "pinSalt": "eb5ca09da17e9d58423e3e497a80aa8c",
+      "pinHash": "955de8d6a4f01873c9cd81f859931452427f14a3e128d7d8aafdcae25484f68f6d4d023cedc2a4845433116d4c9a73659f3653b5df22df668b48afe9049ae27c"
+    },
+    {
+      "id": "u-learner-031",
+      "role": "learner",
+      "name": "Sipho K.",
+      "loginCode": "031",
+      "learnerId": 2,
+      "active": true,
+      "pinSalt": "ebf9eef05d5db309c9bb2a6f6a79969b",
+      "pinHash": "78e2313838329c5abdd8d70cb31dcfa4a63c12e56d74b993f2a1a96f66e400868915e95dc940dcd28de3966eec286af2d0e103efed300788cd455413ea6aec4d"
+    },
+    {
+      "id": "u-learner-018",
+      "role": "learner",
+      "name": "Amahle N.",
+      "loginCode": "018",
+      "learnerId": 3,
+      "active": true,
+      "pinSalt": "79059fa14144482d3e87daf2c524abbf",
+      "pinHash": "ee8023e2923af121cb4c69d87e954460d92ec22fb7f4f53fd233a1a880957541ae62000ce4714262e8167149586fa3dc54395ccf3e54af95b7f542f7448784ec"
+    },
+    {
+      "id": "u-learner-056",
+      "role": "learner",
+      "name": "Shirley",
+      "loginCode": "056",
+      "learnerId": 4,
+      "pinSalt": "cf9cd54da2cb4e79e3b7af82758d938a",
+      "pinHash": "80ec57a9b06393a351bce2dae1177183d5bfd4a7f94e245eb8fbb31f6eb5590e213da938c356432ebb68f7ff50255b4bc87f5ce341b8eec542c5038874108aaf",
+      "active": true
+    }
+  ],
   "alerts": [
     {
-      "id": "694",
-      "name": "Thabiso Maboe A.",
+      "id": "037",
+      "caseId": "C037",
+      "learnerId": 1,
+      "learnerCode": "024",
+      "name": "Thabiso Maboe",
       "grade": "Grade 5B",
-      "type": "Feeling happy",
-      "time": "Just now",
+      "type": "Feeling sad",
+      "createdAt": "2026-09-22T15:02:17.183Z",
       "level": "New",
       "color": "purple",
-      "concern": "Home or family",
-      "message": "Some older learners keep bothering me near the sports field.",
+      "concern": "Friends or classmates",
+      "message": "BFYULF",
       "status": "Open"
     },
     {
-      "id": "691",
-      "name": "Thabiso Maboe A.",
+      "id": "036",
+      "caseId": "C036",
+      "learnerId": 1,
+      "learnerCode": "024",
+      "name": "Thabiso Maboe",
       "grade": "Grade 5B",
       "type": "Feeling happy",
-      "time": "Just now",
-      "level": "New",
-      "color": "purple",
+      "createdAt": "2026-09-22T14:59:52.649Z",
+      "level": "Critical",
+      "color": "red",
       "concern": "Bullying or safety",
-      "message": "Some older learners keep bothering me near the sports field.",
+      "message": "",
       "status": "Open"
     },
     {
-      "id": "551",
-      "name": "Thabiso Maboe A.",
+      "id": "035",
+      "caseId": "C035",
+      "learnerId": 1,
+      "learnerCode": "024",
+      "name": "Thabiso Maboe",
       "grade": "Grade 5B",
       "type": "Feeling happy",
-      "time": "Just now",
+      "createdAt": "2026-09-22T14:59:15.048Z",
       "level": "New",
       "color": "purple",
-      "concern": "I feel sick",
-      "message": "Some older learners keep bothering me near the sports field.",
+      "concern": "Friends or classmates",
+      "message": "tdfIGYUD",
       "status": "Open"
     },
     {
-      "id": "207",
-      "name": "Thabiso Maboe A.",
+      "id": "034",
+      "caseId": "C034",
+      "learnerId": 1,
+      "learnerCode": "024",
+      "name": "Thabiso Maboe",
       "grade": "Grade 5B",
       "type": "Feeling happy",
-      "time": "Just now",
+      "createdAt": "2026-09-22T14:27:09.291Z",
       "level": "New",
       "color": "purple",
-      "concern": "I feel sick",
-      "message": "Some older learners keep bothering me near the sports field.",
+      "concern": "Friends or classmates",
+      "message": "ffyg",
       "status": "Open"
+    },
+    {
+      "id": "033",
+      "caseId": "C033",
+      "learnerId": 1,
+      "learnerCode": "024",
+      "name": "Thabiso Maboe",
+      "grade": "Grade 5B",
+      "type": "Feeling happy",
+      "createdAt": "2026-09-22T14:20:16.750Z",
+      "level": "New",
+      "color": "purple",
+      "concern": "Friends or classmates",
+      "message": "yyuf",
+      "status": "Open"
+    },
+    {
+      "id": "032",
+      "caseId": "C032",
+      "learnerId": 1,
+      "learnerCode": "024",
+      "name": "Thabiso Maboe",
+      "grade": "Grade 5B",
+      "type": "Feeling sad",
+      "createdAt": "2026-09-22T14:16:49.537Z",
+      "level": "Attention",
+      "color": "orange",
+      "concern": "School work",
+      "message": "Need help with maths.",
+      "status": "Acknowledged",
+      "acknowledgedAt": "2026-09-22T14:17:04.010Z",
+      "acknowledgedBy": "Ms Kholofelo"
     },
     {
       "id": "024",
+      "caseId": "C024",
+      "learnerId": 1,
+      "learnerCode": "024",
       "name": "Thabiso Maboe",
-      "grade": "Class 2B",
+      "grade": "Grade 5B",
       "type": "Feeling unsafe",
-      "time": "8 min ago",
+      "createdAt": "2026-09-22T08:00:00.000Z",
       "level": "Critical",
       "color": "red",
       "concern": "Bullying or safety",
       "message": "Some older learners keep bothering me near the sports field.",
-      "status": "Resolved"
+      "status": "Open"
     },
     {
       "id": "031",
+      "caseId": "C031",
+      "learnerId": 2,
+      "learnerCode": "031",
       "name": "Sipho K.",
-      "grade": "Class 2B",
+      "grade": "Grade 5B",
       "type": "Feeling anxious",
-      "time": "24 min ago",
+      "createdAt": "2026-09-22T07:45:00.000Z",
       "level": "Attention",
       "color": "orange",
       "concern": "Friends or classmates",
@@ -88,10 +249,13 @@
     },
     {
       "id": "018",
+      "caseId": "C018",
+      "learnerId": 3,
+      "learnerCode": "018",
       "name": "Amahle N.",
       "grade": "Grade 4A",
       "type": "Feeling sick",
-      "time": "42 min ago",
+      "createdAt": "2026-09-22T07:30:00.000Z",
       "level": "New",
       "color": "purple",
       "concern": "I feel sick",
@@ -99,11 +263,446 @@
       "status": "Open"
     }
   ],
+  "cases": [
+    {
+      "id": "C037",
+      "alertId": "037",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "Friends or classmates",
+      "message": "BFYULF",
+      "status": "Open",
+      "createdAt": "2026-09-22T15:02:17.183Z",
+      "history": [
+        {
+          "at": "2026-09-22T15:02:17.183Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        }
+      ]
+    },
+    {
+      "id": "C036",
+      "alertId": "036",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "Bullying or safety",
+      "message": "",
+      "status": "Escalated",
+      "createdAt": "2026-09-22T14:59:52.649Z",
+      "history": [
+        {
+          "at": "2026-09-22T14:59:52.649Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        },
+        {
+          "at": "2026-09-22T14:59:52.649Z",
+          "event": "Auto-escalated: safety concern",
+          "by": "System"
+        }
+      ]
+    },
+    {
+      "id": "C035",
+      "alertId": "035",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "Friends or classmates",
+      "message": "tdfIGYUD",
+      "status": "Open",
+      "createdAt": "2026-09-22T14:59:15.048Z",
+      "history": [
+        {
+          "at": "2026-09-22T14:59:15.048Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        }
+      ]
+    },
+    {
+      "id": "C034",
+      "alertId": "034",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "Friends or classmates",
+      "message": "ffyg",
+      "status": "Open",
+      "createdAt": "2026-09-22T14:27:09.291Z",
+      "history": [
+        {
+          "at": "2026-09-22T14:27:09.291Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        }
+      ]
+    },
+    {
+      "id": "C033",
+      "alertId": "033",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "Friends or classmates",
+      "message": "yyuf",
+      "status": "Open",
+      "createdAt": "2026-09-22T14:20:16.750Z",
+      "history": [
+        {
+          "at": "2026-09-22T14:20:16.750Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        }
+      ]
+    },
+    {
+      "id": "C032",
+      "alertId": "032",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "School work",
+      "message": "Need help with maths.",
+      "status": "Monitoring",
+      "createdAt": "2026-09-22T14:16:49.537Z",
+      "history": [
+        {
+          "at": "2026-09-22T14:16:49.537Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        },
+        {
+          "at": "2026-09-22T14:17:04.010Z",
+          "event": "Alert acknowledged",
+          "by": "Ms Kholofelo"
+        },
+        {
+          "at": "2026-09-22T14:17:04.014Z",
+          "event": "Follow-up: Private learner conversation · Needs monitoring",
+          "by": "Ms Kholofelo",
+          "note": "Spoke privately."
+        }
+      ]
+    },
+    {
+      "id": "C024",
+      "alertId": "024",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "Bullying or safety",
+      "message": "Some older learners keep bothering me near the sports field.",
+      "status": "Open",
+      "createdAt": "2026-09-22T08:00:00.000Z",
+      "history": [
+        {
+          "at": "2026-09-22T08:00:00.000Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        }
+      ]
+    },
+    {
+      "id": "C031",
+      "alertId": "031",
+      "learnerId": 2,
+      "learnerName": "Sipho K.",
+      "learnerCode": "031",
+      "grade": "Grade 5B",
+      "concern": "Friends or classmates",
+      "message": "",
+      "status": "Open",
+      "createdAt": "2026-09-22T07:45:00.000Z",
+      "history": [
+        {
+          "at": "2026-09-22T07:45:00.000Z",
+          "event": "Case opened from learner check-in",
+          "by": "Sipho K."
+        }
+      ]
+    },
+    {
+      "id": "C018",
+      "alertId": "018",
+      "learnerId": 3,
+      "learnerName": "Amahle N.",
+      "learnerCode": "018",
+      "grade": "Grade 4A",
+      "concern": "I feel sick",
+      "message": "",
+      "status": "Open",
+      "createdAt": "2026-09-22T07:30:00.000Z",
+      "history": [
+        {
+          "at": "2026-09-22T07:30:00.000Z",
+          "event": "Case opened from learner check-in",
+          "by": "Amahle N."
+        }
+      ]
+    }
+  ],
+  "followUps": [
+    {
+      "id": "001",
+      "caseId": "C032",
+      "teacherId": 1,
+      "by": "Ms Kholofelo",
+      "type": "Private learner conversation",
+      "outcome": "Needs monitoring",
+      "note": "Spoke privately.",
+      "at": "2026-09-22T14:17:04.014Z"
+    }
+  ],
+  "audit": [
+    {
+      "id": "aud-1790089907257-91",
+      "at": "2026-09-22T15:11:47.257Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "login",
+      "detail": "admin signed in"
+    },
+    {
+      "id": "aud-1790089737269-79",
+      "at": "2026-09-22T15:08:57.269Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "learner_created",
+      "detail": "Shirley (056)"
+    },
+    {
+      "id": "aud-1790089387652-47",
+      "at": "2026-09-22T15:03:07.652Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "login",
+      "detail": "teacher signed in"
+    },
+    {
+      "id": "aud-1790089337183-25",
+      "at": "2026-09-22T15:02:17.183Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "alert_created",
+      "detail": "Alert 037 for Thabiso Maboe"
+    },
+    {
+      "id": "aud-1790089337183-66",
+      "at": "2026-09-22T15:02:17.183Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Not Okay · Friends or classmates"
+    },
+    {
+      "id": "aud-1790089231046-35",
+      "at": "2026-09-22T15:00:31.046Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1790089192649-25",
+      "at": "2026-09-22T14:59:52.649Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "alert_created",
+      "detail": "Alert 036 for Thabiso Maboe"
+    },
+    {
+      "id": "aud-1790089192649-37",
+      "at": "2026-09-22T14:59:52.649Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Not Okay · Bullying or safety"
+    },
+    {
+      "id": "aud-1790089155048-13",
+      "at": "2026-09-22T14:59:15.048Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "alert_created",
+      "detail": "Alert 035 for Thabiso Maboe"
+    },
+    {
+      "id": "aud-1790089155048-87",
+      "at": "2026-09-22T14:59:15.048Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Not Okay · Friends or classmates"
+    },
+    {
+      "id": "aud-1790089115010-19",
+      "at": "2026-09-22T14:58:35.010Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1790087474832-68",
+      "at": "2026-09-22T14:31:14.832Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "login",
+      "detail": "admin signed in"
+    },
+    {
+      "id": "aud-1790087422339-2",
+      "at": "2026-09-22T14:30:22.339Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "login",
+      "detail": "teacher signed in"
+    },
+    {
+      "id": "aud-1790087229291-19",
+      "at": "2026-09-22T14:27:09.291Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "alert_created",
+      "detail": "Alert 034 for Thabiso Maboe"
+    },
+    {
+      "id": "aud-1790087229291-23",
+      "at": "2026-09-22T14:27:09.291Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Not Okay · Friends or classmates"
+    },
+    {
+      "id": "aud-1790087210246-51",
+      "at": "2026-09-22T14:26:50.246Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1790086816750-28",
+      "at": "2026-09-22T14:20:16.750Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "alert_created",
+      "detail": "Alert 033 for Thabiso Maboe"
+    },
+    {
+      "id": "aud-1790086816750-70",
+      "at": "2026-09-22T14:20:16.750Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Not Okay · Friends or classmates"
+    },
+    {
+      "id": "aud-1790086800640-60",
+      "at": "2026-09-22T14:20:00.640Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Okay"
+    },
+    {
+      "id": "aud-1790086698126-47",
+      "at": "2026-09-22T14:18:18.126Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1790086671734-76",
+      "at": "2026-09-22T14:17:51.735Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "login",
+      "detail": "teacher signed in"
+    },
+    {
+      "id": "aud-1790086659424-58",
+      "at": "2026-09-22T14:17:39.424Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "login",
+      "detail": "teacher signed in"
+    },
+    {
+      "id": "aud-1790086624014-7",
+      "at": "2026-09-22T14:17:04.014Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "follow_up",
+      "detail": "Case C032 → Monitoring"
+    },
+    {
+      "id": "aud-1790086624010-92",
+      "at": "2026-09-22T14:17:04.010Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "alert_acknowledged",
+      "detail": "Alert 032"
+    },
+    {
+      "id": "aud-1790086609825-15",
+      "at": "2026-09-22T14:16:49.825Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "login",
+      "detail": "teacher signed in"
+    },
+    {
+      "id": "aud-1790086609537-89",
+      "at": "2026-09-22T14:16:49.537Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "alert_created",
+      "detail": "Alert 032 for Thabiso Maboe"
+    },
+    {
+      "id": "aud-1790086609537-23",
+      "at": "2026-09-22T14:16:49.537Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Not Okay · School work"
+    },
+    {
+      "id": "aud-1790086609272-41",
+      "at": "2026-09-22T14:16:49.272Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1790086608983-67",
+      "at": "2026-09-22T14:16:48.983Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "login",
+      "detail": "admin signed in"
+    }
+  ],
   "stats": {
-    "feelingOkay": 27,
-    "activeAlerts": 7,
-    "checkedInPercent": 86,
-    "awaitingFollowUp": 1
+    "feelingOkay": 2,
+    "activeAlerts": 9,
+    "checkedInPercent": 25,
+    "awaitingFollowUp": 9
   },
   "moodBreakdown": [
     {
@@ -133,46 +732,76 @@
   ],
   "checkIns": [
     {
+      "id": "001",
+      "learnerId": 1,
       "mood": "Happy",
       "isOkay": true,
-      "concern": "Bullying or safety",
-      "message": "Some older learners keep bothering me near the sports field.",
-      "submittedAt": "2026-09-10T11:16:42.541Z"
+      "concern": null,
+      "message": "",
+      "submittedAt": "2026-09-22T06:10:00.000Z"
     },
     {
-      "mood": "Happy",
+      "id": "002",
+      "learnerId": 1,
+      "mood": "Sad",
       "isOkay": false,
-      "concern": "I feel sick",
-      "message": "Some older learners keep bothering me near the sports field.",
-      "submittedAt": "2026-09-10T11:16:55.706Z"
+      "concern": "School work",
+      "message": "Need help with maths.",
+      "submittedAt": "2026-09-22T14:16:49.537Z"
     },
     {
-      "mood": "Happy",
-      "isOkay": false,
-      "concern": "I feel sick",
-      "message": "Some older learners keep bothering me near the sports field.",
-      "submittedAt": "2026-09-10T11:18:01.603Z"
-    },
-    {
-      "mood": "Happy",
-      "isOkay": false,
-      "concern": "Bullying or safety",
-      "message": "Some older learners keep bothering me near the sports field.",
-      "submittedAt": "2026-09-10T11:23:34.047Z"
-    },
-    {
+      "id": "003",
+      "learnerId": 1,
       "mood": "Happy",
       "isOkay": true,
-      "concern": "Bullying or safety",
-      "message": "Some older learners keep bothering me near the sports field.",
-      "submittedAt": "2026-09-10T14:35:10.158Z"
+      "concern": null,
+      "message": "",
+      "submittedAt": "2026-09-22T14:20:00.640Z"
     },
     {
+      "id": "004",
+      "learnerId": 1,
       "mood": "Happy",
       "isOkay": false,
-      "concern": "Home or family",
-      "message": "Some older learners keep bothering me near the sports field.",
-      "submittedAt": "2026-09-10T14:35:35.123Z"
+      "concern": "Friends or classmates",
+      "message": "yyuf",
+      "submittedAt": "2026-09-22T14:20:16.750Z"
+    },
+    {
+      "id": "005",
+      "learnerId": 1,
+      "mood": "Happy",
+      "isOkay": false,
+      "concern": "Friends or classmates",
+      "message": "ffyg",
+      "submittedAt": "2026-09-22T14:27:09.291Z"
+    },
+    {
+      "id": "006",
+      "learnerId": 1,
+      "mood": "Happy",
+      "isOkay": false,
+      "concern": "Friends or classmates",
+      "message": "tdfIGYUD",
+      "submittedAt": "2026-09-22T14:59:15.048Z"
+    },
+    {
+      "id": "007",
+      "learnerId": 1,
+      "mood": "Happy",
+      "isOkay": false,
+      "concern": "Bullying or safety",
+      "message": "",
+      "submittedAt": "2026-09-22T14:59:52.649Z"
+    },
+    {
+      "id": "008",
+      "learnerId": 1,
+      "mood": "Sad",
+      "isOkay": false,
+      "concern": "Friends or classmates",
+      "message": "BFYULF",
+      "submittedAt": "2026-09-22T15:02:17.183Z"
     }
   ]
 }

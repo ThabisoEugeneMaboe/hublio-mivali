@@ -14,11 +14,71 @@
     <div class="login-card">
       <img src="hublio-logo.jpg" alt="Hublio" class="login-logo" />
       <h1>Wellness check-ins</h1>
-      <p class="login-sub">Choose how you want to sign in today.</p>
-      <a class="btn btn-primary login-btn" href="index.html">I'm a learner</a>
-      <a class="btn btn-light login-btn" href="dashboard.html">I'm a teacher</a>
-      <p class="login-foot">Powered by Mivali</p>
+      <p class="login-sub">Sign in with your school role. Learner details stay private to authorised staff.</p>
+      <div class="switch login-roles">
+        <button type="button" class="active" data-role="learner">Learner</button>
+        <button type="button" data-role="teacher">Teacher</button>
+        <button type="button" data-role="admin">Admin</button>
+      </div>
+      <form id="login-form" class="login-form">
+        <label id="login-label" for="login">Learner code</label>
+        <input id="login" name="login" autocomplete="username" required />
+        <label id="secret-label" for="password">PIN</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+        <p id="login-error" class="login-error" hidden></p>
+        <button class="btn btn-primary login-btn" type="submit">Sign in</button>
+      </form>
+      <p class="login-hint" id="login-hint">Demo: code <b>024</b> · PIN <b>1234</b></p>
+      <p class="login-foot">Powered by Mivali · Phase 3 MVP</p>
     </div>
   </div>
+  <script>
+    const roles = document.querySelectorAll('.login-roles button');
+    const loginLabel = document.getElementById('login-label');
+    const secretLabel = document.getElementById('secret-label');
+    const hint = document.getElementById('login-hint');
+    const errorEl = document.getElementById('login-error');
+    let role = 'learner';
+
+    const copy = {
+      learner: { login: 'Learner code', secret: 'PIN', hint: 'Demo: code <b>024</b> · PIN <b>1234</b>' },
+      teacher: { login: 'Email', secret: 'Password', hint: 'Demo: <b>kholofelo@school.local</b> · <b>demo</b>' },
+      admin: { login: 'Email', secret: 'Password', hint: 'Demo: <b>admin@demo.school</b> · <b>demo</b>' },
+    };
+
+    roles.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        role = btn.dataset.role;
+        roles.forEach((b) => b.classList.toggle('active', b === btn));
+        loginLabel.textContent = copy[role].login;
+        secretLabel.textContent = copy[role].secret;
+        hint.innerHTML = copy[role].hint;
+      });
+    });
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      const payload = {
+        role,
+        login: document.getElementById('login').value,
+        password: document.getElementById('password').value,
+      };
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        errorEl.textContent = body.error || 'Could not sign in';
+        errorEl.hidden = false;
+        return;
+      }
+      if (body.user.role === 'learner') location.href = 'index.html';
+      else location.href = 'dashboard.html';
+    });
+  </script>
 </body>
 </html>
