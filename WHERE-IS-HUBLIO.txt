@@ -1,10 +1,9 @@
-Hublio is SEPARATE from Sampra.
+Hublio Phase 3 (always this version)
 
-  Hublio (wellness app):  C:\Projects\Hublio
-  Sampra (web + mobile):  C:\Sampra
+  Sampra copy:  C:\Sampra\Hublio   <-- run from here
+  Dev copy:     C:\Projects\Hublio
+  Render:       https://hublio-mivali.onrender.com/login.html
+  GitHub:       https://github.com/ThabisoEugeneMaboe/hublio-mivali
 
-Run Hublio only:
-  Double-click  C:\Projects\Hublio\Start Hublio.bat
-  Open          http://localhost:3000/login.html
-
-Sampra is NOT started by Hublio. Different folder, different port (3000).
+Run:  C:\Sampra\Start Hublio.bat
+See:  PHASE3-ALWAYS.md

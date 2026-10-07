@@ -1,16 +1,11 @@
 @echo off
-title Hublio Wellness App (separate from Sampra)
+title Hublio Phase 3 (Mivali)
 cd /d "%~dp0"
 echo.
-echo ========================================
-echo   HUBLIO ONLY - not Sampra
-echo   Folder: C:\Projects\Hublio
-echo   Port:   3000
-echo ========================================
-echo.
-echo   Login:    http://localhost:3000/login.html
-echo   Learner:  http://localhost:3000/
-echo   Teacher:  http://localhost:3000/dashboard.html
+echo   HUBLIO PHASE 3 - Learner / Teacher / Admin
+echo   Folder: C:\Sampra\Hublio  (or this folder if running from Projects)
+echo   Login:  http://localhost:3000/login.html
+echo   Render: https://hublio-mivali.onrender.com/login.html
 echo.
 start http://localhost:3000/login.html
 node api\server.js
