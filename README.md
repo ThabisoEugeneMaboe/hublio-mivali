@@ -30,6 +30,13 @@ Open **http://localhost:3000/login.html**
 
 Not in this MVP: AI counselling, parent apps, advanced analytics, SMS gateways.
 
+## Documentation
+
+| Document | Use |
+|----------|-----|
+| [docs/DOCUMENTATION-SPEC.md](docs/DOCUMENTATION-SPEC.md) | Phase 3 product and technical specification |
+| [docs/DEMO-PRESENTATION-SPEC.md](docs/DEMO-PRESENTATION-SPEC.md) | Slide outline, talk track, and live demo script |
+
 ## API
 
 | Method | Path | Purpose |
