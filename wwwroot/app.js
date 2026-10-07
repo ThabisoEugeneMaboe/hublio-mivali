@@ -40,6 +40,7 @@ const statePage = {
 let [mode, screen] = pageState[currentPage] || ['learner', 'home'];
 const app = document.querySelector('#app');
 const brand = `<div class="brand"><img src="mivali-logo.png" alt="Mivali" class="brand-logo" /></div>`;
+const ytgCredit = `<footer class="ytg-credit" role="contentinfo"><span>Developed by <strong>Young Tech Giants</strong></span></footer>`;
 
 function esc(value) {
   return String(value ?? '')
@@ -338,7 +339,7 @@ function render() {
   const key = `${mode}:${screen}`;
   const target = statePage[key];
   if (target && location.pathname.split('/').pop() !== target) history.pushState({ mode, screen, teacherNav, caseId }, '', target);
-  app.innerHTML = mode === 'learner' ? learner() : staff();
+  app.innerHTML = (mode === 'learner' ? learner() : staff()) + ytgCredit;
   window.scrollTo(0, 0);
 }
 
