@@ -1,0 +1,34 @@
+Deploy Mivali Phase 3 to Render (one time + auto later)
+======================================================
+
+Code is on GitHub (main):
+  https://github.com/ThabisoEugeneMaboe/hublio-mivali
+Latest commit for deploy: ba93749 (Mivali rebrand)
+
+OPTION A — Manual deploy (fastest now)
+--------------------------------------
+1. Sign in: https://dashboard.render.com
+2. Open your web service (name: hublio-mivali)
+3. Click "Manual Deploy" → "Deploy latest commit"
+4. Wait 3–5 minutes until status is Live
+5. Open: https://hublio-mivali.onrender.com/login.html
+6. Hard refresh (Ctrl+F5) — you should see mivali-logo.png
+
+OPTION B — Connect GitHub auto-deploy
+-------------------------------------
+Service → Settings → Build & Deploy:
+  Repository: ThabisoEugeneMaboe/hublio-mivali
+  Branch: main
+  Auto-Deploy: Yes
+  Build: npm install
+  Start: node api/server.js
+
+OPTION C — Deploy hook (auto on every git push)
+-----------------------------------------------
+1. Render → Service → Settings → Deploy Hook → Copy URL
+2. GitHub → hublio-mivali repo → Settings → Secrets → Actions
+3. New secret: RENDER_DEPLOY_HOOK_URL = (paste hook URL)
+4. Push any commit OR run GitHub Action "Deploy to Render"
+
+Live URL after deploy:
+  https://hublio-mivali.onrender.com/login.html
