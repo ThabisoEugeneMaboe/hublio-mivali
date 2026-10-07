@@ -39,7 +39,7 @@ const statePage = {
 
 let [mode, screen] = pageState[currentPage] || ['learner', 'home'];
 const app = document.querySelector('#app');
-const brand = `<div class="brand"><img src="hublio-logo.jpg" alt="Hublio" class="brand-logo" /></div>`;
+const brand = `<div class="brand"><img src="mivali-logo.png" alt="Mivali" class="brand-logo" /></div>`;
 
 function esc(value) {
   return String(value ?? '')
@@ -330,7 +330,7 @@ function staff() {
     content = (views[teacherNav] || staffDashboard)();
   }
   const side = screen === 'dashboard' ? teacherNav : 'Cases';
-  return `<div class="shell">${sidebar(side)}<main class="main">${content}</main></div><div class="demo-note">Phase 3 MVP · ${esc(me?.role)}</div>`;
+  return `<div class="shell">${sidebar(side)}<main class="main">${content}</main></div><div class="demo-note">Mivali · Phase 3 MVP · ${esc(me?.role)}</div>`;
 }
 
 function render() {

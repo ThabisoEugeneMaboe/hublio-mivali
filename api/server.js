@@ -218,7 +218,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Hublio Phase 3 MVP on port ${PORT}`);
+  console.log(`Mivali Phase 3 MVP on port ${PORT}`);
   console.log('Login:   /login.html');
   console.log('Learner: admin code 024 / PIN 1234');
   console.log('Teacher: kholofelo@school.local / demo');

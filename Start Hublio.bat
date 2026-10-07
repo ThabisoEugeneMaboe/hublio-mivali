@@ -1,9 +1,9 @@
 @echo off
-title Hublio Phase 3 (Mivali)
+title Mivali Phase 3
 cd /d "%~dp0"
 echo.
-echo   HUBLIO PHASE 3 - Learner / Teacher / Admin
-echo   Folder: C:\Sampra\Hublio  (or this folder if running from Projects)
+echo   MIVALI - Learner / Teacher / Admin
+echo   Folder: C:\Sampra\Hublio
 echo   Login:  http://localhost:3000/login.html
 echo   Render: https://hublio-mivali.onrender.com/login.html
 echo.

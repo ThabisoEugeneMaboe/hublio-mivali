@@ -1,7 +1,7 @@
 {
   "school": {
     "id": "sch-001",
-    "name": "Hublio Demo Primary",
+    "name": "Mivali Demo Primary",
     "timezone": "Africa/Johannesburg",
     "checkInWindow": "Weekday mornings",
     "escalateSafetyImmediately": true
@@ -13,6 +13,13 @@
       "className": "Class 2B",
       "email": "kholofelo@school.local",
       "avatarUrl": "mario.jpeg"
+    },
+    {
+      "id": 2,
+      "name": "Thandeka ",
+      "email": "thandekajean@gmail.com",
+      "className": "Class 8b",
+      "avatarUrl": ""
     }
   ],
   "learners": [
@@ -47,6 +54,14 @@
       "grade": "Grade 6b",
       "className": "class eb",
       "teacherId": 1
+    },
+    {
+      "id": 5,
+      "code": "89",
+      "name": "Kholofelo ",
+      "grade": "Grade 8B",
+      "className": "Class eb",
+      "teacherId": 1
     }
   ],
   "classes": [
@@ -61,6 +76,18 @@
       "name": "Grade 4A",
       "grade": "Grade 4A",
       "teacherId": 1
+    },
+    {
+      "id": "cls-2",
+      "name": "Class 8b",
+      "grade": "Class 8b",
+      "teacherId": 2
+    },
+    {
+      "id": "cls-1791362027120",
+      "name": "Class 7B",
+      "grade": "5",
+      "teacherId": 23
     }
   ],
   "users": [
@@ -122,9 +149,63 @@
       "pinSalt": "cf9cd54da2cb4e79e3b7af82758d938a",
       "pinHash": "80ec57a9b06393a351bce2dae1177183d5bfd4a7f94e245eb8fbb31f6eb5590e213da938c356432ebb68f7ff50255b4bc87f5ce341b8eec542c5038874108aaf",
       "active": true
+    },
+    {
+      "id": "u-learner-89",
+      "role": "learner",
+      "name": "Kholofelo ",
+      "loginCode": "89",
+      "learnerId": 5,
+      "pinSalt": "a70387be2fe5ada54d4fdc976cde8d98",
+      "pinHash": "bdedf545d63d12165a709a73b84890754f54f7a74fd5ea31140544f434af68cce3bf77aee55f2d3d0024a5f6ff048e270e3ba87b0ccdd4789459bcc995b74c9b",
+      "active": true
+    },
+    {
+      "id": "u-teacher-2",
+      "role": "teacher",
+      "name": "Thandeka ",
+      "email": "thandekajean@gmail.com",
+      "teacherId": 2,
+      "salt": "d1767ffa955aae446bb601d9682da685",
+      "passwordHash": "987870d0593cef243d5f809eeccc6393b97fe96f4c5ed3853e3552e31f096ab8a84398684494dae065ebe766723910435d1328c2aac04364ca81a1b26c64a212",
+      "active": true
     }
   ],
   "alerts": [
+    {
+      "id": "041",
+      "caseId": "C041",
+      "learnerId": 1,
+      "learnerCode": "024",
+      "name": "Thabiso Maboe",
+      "grade": "Grade 5B",
+      "type": "Feeling sick",
+      "createdAt": "2026-10-07T08:22:22.914Z",
+      "level": "Resolved",
+      "color": "green",
+      "concern": "Home or family",
+      "message": "kfugg",
+      "status": "Resolved",
+      "acknowledgedAt": "2026-10-07T08:25:12.455Z",
+      "acknowledgedBy": "Ms Kholofelo"
+    },
+    {
+      "id": "040",
+      "caseId": "C040",
+      "learnerId": 1,
+      "learnerCode": "024",
+      "name": "Thabiso Maboe",
+      "grade": "Grade 5B",
+      "type": "Feeling anxious",
+      "createdAt": "2026-10-07T06:18:46.307Z",
+      "level": "Resolved",
+      "color": "green",
+      "concern": "Bullying or safety",
+      "message": "jh",
+      "status": "Resolved",
+      "acknowledgedAt": "2026-10-07T06:20:12.322Z",
+      "acknowledgedBy": "Ms Kholofelo"
+    },
     {
       "id": "039",
       "caseId": "C039",
@@ -296,6 +377,72 @@
     }
   ],
   "cases": [
+    {
+      "id": "C041",
+      "alertId": "041",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "Home or family",
+      "message": "kfugg",
+      "status": "Resolved",
+      "createdAt": "2026-10-07T08:22:22.914Z",
+      "history": [
+        {
+          "at": "2026-10-07T08:22:22.914Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        },
+        {
+          "at": "2026-10-07T08:22:22.914Z",
+          "event": "Auto-escalated: safety concern",
+          "by": "System"
+        },
+        {
+          "at": "2026-10-07T08:26:13.528Z",
+          "event": "Follow-up: Counsellor referral · Escalated",
+          "by": "Ms Kholofelo",
+          "note": "uiuudpu"
+        },
+        {
+          "at": "2026-10-07T08:34:25.514Z",
+          "event": "Follow-up: Private learner conversation · Resolved locally",
+          "by": "School Admin",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "C040",
+      "alertId": "040",
+      "learnerId": 1,
+      "learnerName": "Thabiso Maboe",
+      "learnerCode": "024",
+      "grade": "Grade 5B",
+      "concern": "Bullying or safety",
+      "message": "jh",
+      "status": "Resolved",
+      "createdAt": "2026-10-07T06:18:46.307Z",
+      "history": [
+        {
+          "at": "2026-10-07T06:18:46.307Z",
+          "event": "Case opened from learner check-in",
+          "by": "Thabiso Maboe"
+        },
+        {
+          "at": "2026-10-07T06:18:46.307Z",
+          "event": "Auto-escalated: safety concern",
+          "by": "System"
+        },
+        {
+          "at": "2026-10-07T06:20:30.701Z",
+          "event": "Follow-up: Private learner conversation · Resolved locally",
+          "by": "Ms Kholofelo",
+          "note": ""
+        }
+      ]
+    },
     {
       "id": "C039",
       "alertId": "039",
@@ -540,6 +687,36 @@
   ],
   "followUps": [
     {
+      "id": "005",
+      "caseId": "C041",
+      "teacherId": null,
+      "by": "School Admin",
+      "type": "Private learner conversation",
+      "outcome": "Resolved locally",
+      "note": "",
+      "at": "2026-10-07T08:34:25.514Z"
+    },
+    {
+      "id": "004",
+      "caseId": "C041",
+      "teacherId": 1,
+      "by": "Ms Kholofelo",
+      "type": "Counsellor referral",
+      "outcome": "Escalated",
+      "note": "uiuudpu",
+      "at": "2026-10-07T08:26:13.528Z"
+    },
+    {
+      "id": "003",
+      "caseId": "C040",
+      "teacherId": 1,
+      "by": "Ms Kholofelo",
+      "type": "Private learner conversation",
+      "outcome": "Resolved locally",
+      "note": "",
+      "at": "2026-10-07T06:20:30.701Z"
+    },
+    {
       "id": "002",
       "caseId": "C038",
       "teacherId": 1,
@@ -561,6 +738,190 @@
     }
   ],
   "audit": [
+    {
+      "id": "aud-1791362267798-16",
+      "at": "2026-10-07T08:37:47.798Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1791362065514-18",
+      "at": "2026-10-07T08:34:25.514Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "follow_up",
+      "detail": "Case C041 → Resolved"
+    },
+    {
+      "id": "aud-1791362027120-88",
+      "at": "2026-10-07T08:33:47.120Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "class_created",
+      "detail": "Class 7B"
+    },
+    {
+      "id": "aud-1791361944831-62",
+      "at": "2026-10-07T08:32:24.831Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "teacher_created",
+      "detail": "Thandeka "
+    },
+    {
+      "id": "aud-1791361889148-8",
+      "at": "2026-10-07T08:31:29.148Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "learner_created",
+      "detail": "Kholofelo  (89)"
+    },
+    {
+      "id": "aud-1791361781810-60",
+      "at": "2026-10-07T08:29:41.810Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "login",
+      "detail": "admin signed in"
+    },
+    {
+      "id": "aud-1791361573528-29",
+      "at": "2026-10-07T08:26:13.528Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "case_escalated",
+      "detail": "Case C041 → Escalated"
+    },
+    {
+      "id": "aud-1791361512456-42",
+      "at": "2026-10-07T08:25:12.456Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "alert_acknowledged",
+      "detail": "Alert 041"
+    },
+    {
+      "id": "aud-1791361386998-72",
+      "at": "2026-10-07T08:23:06.998Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "login",
+      "detail": "teacher signed in"
+    },
+    {
+      "id": "aud-1791361342914-97",
+      "at": "2026-10-07T08:22:22.914Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "alert_created",
+      "detail": "Alert 041 for Thabiso Maboe"
+    },
+    {
+      "id": "aud-1791361342914-69",
+      "at": "2026-10-07T08:22:22.914Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Not Okay · Home or family"
+    },
+    {
+      "id": "aud-1791361222738-57",
+      "at": "2026-10-07T08:20:22.738Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Okay"
+    },
+    {
+      "id": "aud-1791361153438-20",
+      "at": "2026-10-07T08:19:13.438Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1791354202953-83",
+      "at": "2026-10-07T06:23:22.953Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Okay"
+    },
+    {
+      "id": "aud-1791354191129-93",
+      "at": "2026-10-07T06:23:11.129Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1791354054721-78",
+      "at": "2026-10-07T06:20:54.721Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "login",
+      "detail": "admin signed in"
+    },
+    {
+      "id": "aud-1791354030701-55",
+      "at": "2026-10-07T06:20:30.701Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "follow_up",
+      "detail": "Case C040 → Resolved"
+    },
+    {
+      "id": "aud-1791354012322-39",
+      "at": "2026-10-07T06:20:12.322Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "alert_acknowledged",
+      "detail": "Alert 040"
+    },
+    {
+      "id": "aud-1791353948304-65",
+      "at": "2026-10-07T06:19:08.304Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "login",
+      "detail": "teacher signed in"
+    },
+    {
+      "id": "aud-1791353926307-39",
+      "at": "2026-10-07T06:18:46.307Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "alert_created",
+      "detail": "Alert 040 for Thabiso Maboe"
+    },
+    {
+      "id": "aud-1791353926307-56",
+      "at": "2026-10-07T06:18:46.307Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Not Okay · Bullying or safety"
+    },
+    {
+      "id": "aud-1791353884870-2",
+      "at": "2026-10-07T06:18:04.870Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "check_in",
+      "detail": "I'm Okay"
+    },
+    {
+      "id": "aud-1791353840404-75",
+      "at": "2026-10-07T06:17:20.404Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
     {
       "id": "aud-1790586873392-85",
       "at": "2026-09-28T09:14:33.392Z",
@@ -899,9 +1260,9 @@
     }
   ],
   "stats": {
-    "feelingOkay": 1,
+    "feelingOkay": 3,
     "activeAlerts": 11,
-    "checkedInPercent": 25,
+    "checkedInPercent": 20,
     "awaitingFollowUp": 11
   },
   "moodBreakdown": [
@@ -1029,6 +1390,51 @@
       "concern": "Bullying or safety",
       "message": "",
       "submittedAt": "2026-09-28T09:14:33.392Z"
+    },
+    {
+      "id": "012",
+      "learnerId": 1,
+      "mood": "Happy",
+      "isOkay": true,
+      "concern": null,
+      "message": "",
+      "submittedAt": "2026-10-07T06:18:04.870Z"
+    },
+    {
+      "id": "013",
+      "learnerId": 1,
+      "mood": "Anxious",
+      "isOkay": false,
+      "concern": "Bullying or safety",
+      "message": "jh",
+      "submittedAt": "2026-10-07T06:18:46.307Z"
+    },
+    {
+      "id": "014",
+      "learnerId": 1,
+      "mood": "Happy",
+      "isOkay": true,
+      "concern": null,
+      "message": "",
+      "submittedAt": "2026-10-07T06:23:22.953Z"
+    },
+    {
+      "id": "015",
+      "learnerId": 1,
+      "mood": "Happy",
+      "isOkay": true,
+      "concern": null,
+      "message": "",
+      "submittedAt": "2026-10-07T08:20:22.738Z"
+    },
+    {
+      "id": "016",
+      "learnerId": 1,
+      "mood": "Sick",
+      "isOkay": false,
+      "concern": "Home or family",
+      "message": "kfugg",
+      "submittedAt": "2026-10-07T08:22:22.914Z"
     }
   ]
 }

@@ -53,7 +53,7 @@ function writeRaw(data) {
 function migrate(data) {
   data.school = data.school || {
     id: 'sch-001',
-    name: 'Hublio Demo Primary',
+    name: 'Mivali Demo Primary',
     timezone: 'Africa/Johannesburg',
     checkInWindow: 'Weekday mornings',
     escalateSafetyImmediately: true,
