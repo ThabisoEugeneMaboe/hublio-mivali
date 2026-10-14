@@ -229,6 +229,45 @@ function recomputeStats(data) {
     activeAlerts: open.length,
     checkedInPercent: Math.round((checkedIn / learnerCount) * 100) || data.stats.checkedInPercent,
     awaitingFollowUp: awaiting.length,
+    learnersCheckedInToday: checkedIn,
+  };
+}
+
+function computeActivity(data, user) {
+  const today = new Date().toISOString().slice(0, 10);
+  const scopedIds = teacherLearnerIds(data, user);
+  const scopedNames = new Set(
+    data.learners.filter((l) => scopedIds.includes(l.id)).map((l) => l.name)
+  );
+  const loginEvents = data.audit.filter(
+    (a) =>
+      a.action === 'login' &&
+      a.role === 'learner' &&
+      String(a.at || '').startsWith(today) &&
+      (user.role === 'admin' || scopedNames.has(a.actor))
+  );
+  const checkInsToday = data.checkIns.filter(
+    (c) => String(c.submittedAt || '').startsWith(today) && scopedIds.includes(c.learnerId)
+  );
+  const uniqueLogins = new Set(loginEvents.map((a) => a.actor)).size;
+  const uniqueCheckIns = new Set(checkInsToday.map((c) => c.learnerId)).size;
+  const recent = data.audit
+    .filter(
+      (a) =>
+        (a.action === 'login' && a.role === 'learner') ||
+        a.action === 'check_in'
+    )
+    .filter((a) => user.role === 'admin' || scopedNames.has(a.actor) || a.role === 'learner')
+    .slice(0, 8)
+    .map((a) => ({
+      at: a.at,
+      label: a.action === 'login' ? `${a.actor} signed in` : a.detail,
+      kind: a.action === 'login' ? 'login' : 'checkin',
+    }));
+  return {
+    learnerLoginsToday: uniqueLogins,
+    learnerCheckInsToday: uniqueCheckIns,
+    recent,
   };
 }
 
@@ -287,6 +326,7 @@ function dashboard(user) {
     classes: data.classes,
     followUps: data.followUps,
     stats: data.stats,
+    activity: computeActivity(data, user),
     moodBreakdown: moodBreakdown(data),
     audit: user.role === 'admin' ? data.audit.slice(0, 80) : [],
     reports: reports(data, user),

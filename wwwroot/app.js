@@ -5,6 +5,10 @@ let db = null;
 let alerts = [];
 let cases = [];
 let stats = { feelingOkay: 0, activeAlerts: 0, checkedInPercent: 0, awaitingFollowUp: 0 };
+let activity = { learnerLoginsToday: 0, learnerCheckInsToday: 0, recent: [] };
+let listFilter = '';
+let activeModal = null;
+let clockTimer = null;
 let moodBreakdown = [];
 let teacherNav = 'Dashboard';
 let caseId = '';
@@ -76,11 +80,102 @@ async function loadData() {
   alerts = db.alerts || [];
   cases = db.cases || [];
   stats = db.stats || stats;
+  activity = db.activity || activity;
   moodBreakdown = (db.moodBreakdown || []).map((m) => [m.mood, m.count, m.percent, m.color]);
 }
 
 function todayLabel() {
   return new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function periodOfDay(date = new Date()) {
+  const h = date.getHours();
+  if (h < 12) return 'Morning';
+  if (h < 17) return 'Afternoon';
+  return 'Evening';
+}
+
+function staffClockHtml() {
+  const now = new Date();
+  const time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  return `<div class="clock-block"><span class="clock-period" id="clock-period">${periodOfDay(now)}</span><strong class="live-clock" id="live-clock">${time}</strong><span class="clock-date">${todayLabel()}</span></div>`;
+}
+
+function staffTopbar(eyebrow, title, extra = '') {
+  return `<div class="topbar staff-topbar"><div><span class="eyebrow">${eyebrow}</span><h1>${title}</h1>${extra}</div>${staffClockHtml()}</div>`;
+}
+
+function activityBanner() {
+  const logins = activity.learnerLoginsToday ?? 0;
+  const checkIns = activity.learnerCheckInsToday ?? stats.learnersCheckedInToday ?? 0;
+  return `<div class="activity-alert" role="status"><span class="activity-alert-icon" aria-hidden="true">🔔</span><div><strong>${logins}</strong> learner sign-in${logins === 1 ? '' : 's'} today · <strong>${checkIns}</strong> checked in on the app</div><button type="button" class="link activity-link" onclick="teacherNav='Reports';screen='dashboard';render()">View activity</button></div>`;
+}
+
+function directoryToolbar(addLabel, modalId, canAdd = true) {
+  const q = esc(listFilter);
+  return `<div class="directory-toolbar"><label class="filter-field">Filter by name<input type="search" placeholder="Search name…" value="${q}" oninput="listFilter=this.value;render()"></label>${
+    canAdd ? `<button type="button" class="btn btn-primary btn-sm" onclick="openModal('${modalId}')">${addLabel}</button>` : ''
+  }</div>`;
+}
+
+function filterByName(items, key = 'name') {
+  const q = listFilter.trim().toLowerCase();
+  if (!q) return items;
+  return items.filter((item) => String(item[key] || '').toLowerCase().includes(q));
+}
+
+function modalLayer() {
+  if (!activeModal) return '';
+  const closeBtn = `<button type="button" class="modal-close" onclick="closeModal()" aria-label="Close">×</button>`;
+  if (activeModal === 'add-learner') {
+    return `<div class="modal-backdrop" onclick="closeModal()"></div><div class="modal" role="dialog" aria-labelledby="modal-title">${closeBtn}<h3 id="modal-title">Add learner</h3>
+      <form class="inline-form modal-form" onsubmit="return createLearner(event)">
+        <div class="fields">
+          <div class="field"><label>Name</label><input name="name" required autofocus></div>
+          <div class="field"><label>Code</label><input name="code" placeholder="032"></div>
+          <div class="field"><label>Grade</label><input name="grade" placeholder="Grade 5B"></div>
+          <div class="field"><label>Class</label><input name="className" placeholder="Class 2B"></div>
+          <div class="field"><label>PIN</label><input name="pin" value="1234"></div>
+        </div>
+        <div class="modal-actions"><button class="btn btn-light" type="button" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="submit">Save learner</button></div>
+      </form></div>`;
+  }
+  if (activeModal === 'add-teacher') {
+    return `<div class="modal-backdrop" onclick="closeModal()"></div><div class="modal" role="dialog">${closeBtn}<h3>Add teacher</h3>
+      <form class="inline-form modal-form" onsubmit="return createTeacher(event)">
+        <div class="fields">
+          <div class="field"><label>Name</label><input name="name" required autofocus></div>
+          <div class="field"><label>Email</label><input name="email" type="email" required></div>
+          <div class="field"><label>Class</label><input name="className"></div>
+          <div class="field"><label>Temp password</label><input name="password" value="demo"></div>
+        </div>
+        <div class="modal-actions"><button class="btn btn-light" type="button" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="submit">Save teacher</button></div>
+      </form></div>`;
+  }
+  if (activeModal === 'add-class') {
+    return `<div class="modal-backdrop" onclick="closeModal()"></div><div class="modal" role="dialog">${closeBtn}<h3>Add class</h3>
+      <form class="inline-form modal-form" onsubmit="return createClass(event)">
+        <div class="fields">
+          <div class="field"><label>Name</label><input name="name" required autofocus></div>
+          <div class="field"><label>Grade</label><input name="grade"></div>
+          <div class="field"><label>Teacher ID</label><input name="teacherId" value="1"></div>
+        </div>
+        <div class="modal-actions"><button class="btn btn-light" type="button" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="submit">Save class</button></div>
+      </form></div>`;
+  }
+  return '';
+}
+
+function startLiveClock() {
+  if (clockTimer) clearInterval(clockTimer);
+  clockTimer = setInterval(() => {
+    const clock = document.getElementById('live-clock');
+    const period = document.getElementById('clock-period');
+    if (!clock) return;
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+    if (period) period.textContent = periodOfDay(now);
+  }, 1000);
 }
 
 function badgeClass(status) {
@@ -92,7 +187,9 @@ function badgeClass(status) {
 
 function phone(content, nav = true) {
   const learnerName = me?.learner?.name || me?.name || 'Learner';
-  return `<div class="phone-wrap"><div class="phone"><div class="phone-head">${brand}<span class="avatar">👦</span></div><div class="phone-content">${content}</div>${nav ? `<div class="bottom-nav"><b>⌂<br>Home</b><span>✓<br>Check-in</span><span>▱<br>Inbox</span><span>♧<br>Profile</span></div>` : ''}</div></div><div class="demo-note">Signed in as ${esc(learnerName)}</div>`;
+  const now = new Date();
+  const phoneClock = `<div class="phone-clock"><span>${periodOfDay(now)}</span><strong id="live-clock">${now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</strong></div>`;
+  return `<div class="phone-wrap"><div class="phone"><div class="phone-head">${brand}${phoneClock}<span class="avatar">👦</span></div><div class="phone-content">${content}</div>${nav ? `<div class="bottom-nav"><b>⌂<br>Home</b><span>✓<br>Check-in</span><span>▱<br>Inbox</span><span>♧<br>Profile</span></div>` : ''}</div></div><div class="demo-note">Signed in as ${esc(learnerName)}</div>`;
 }
 
 function learner() {
@@ -158,7 +255,7 @@ function sidebar(active) {
   const roleLabel = me?.role === 'admin' ? 'School admin' : `Teacher · ${esc(db?.teacher?.className || '')}`;
   return `<aside class="sidebar">${brand}<nav class="nav">${navItems()
     .map((x) => `<button class="${active === x ? 'active' : ''}" onclick="teacherNav='${x}';screen='dashboard';render()">${icon(x)} &nbsp; ${x}</button>`)
-    .join('')}</nav><div class="profile"><span class="avatar">👩</span><div><b>${esc(name)}</b><br><small>${roleLabel}</small><br><button class="link" onclick="logout()">Sign out</button></div></div></aside>`;
+    .join('')}</nav><div class="profile"><span class="avatar">👩</span><div><b>${esc(name)}</b><br><small>${roleLabel}</small><button type="button" class="btn-signout" onclick="logout()">Sign out</button></div></div></aside>`;
 }
 
 function icon(name) {
@@ -172,7 +269,8 @@ function alertRow(a) {
 function staffDashboard() {
   const tName = me?.name || 'there';
   const openAlerts = alerts.filter((a) => a.status !== 'Resolved');
-  return `<div class="topbar"><div><span class="eyebrow">${esc(db?.school?.name || 'School')} · ${me?.role === 'admin' ? 'Admin' : 'Teacher'} portal</span><h1>Dashboard overview</h1></div></div><section class="hero"><div><span class="eyebrow" style="color:#bfaee7">Class wellness</span><h2>Good morning, ${esc(tName)}</h2><p>Here's how your learners are doing today.</p></div><div class="date-pill">${todayLabel()}</div></section><div class="stats"><div class="stat"><div class="icon green">✓</div><strong>${stats.feelingOkay}</strong><span>Feeling okay</span></div><div class="stat"><div class="icon red">!</div><strong>${stats.activeAlerts}</strong><span>Active alerts</span></div><div class="stat"><div class="icon purple">⌁</div><strong>${stats.checkedInPercent}%</strong><span>Checked in</span></div><div class="stat"><div class="icon orange">◷</div><strong>${stats.awaitingFollowUp}</strong><span>Open cases</span></div></div><div class="grid"><section class="panel"><div class="panel-head"><h3>Active alerts</h3><button class="link" onclick="teacherNav='Alerts';render()">View all</button></div>${openAlerts.length ? openAlerts.map(alertRow).join('') : '<p class="empty">No active alerts.</p>'}</section><section class="panel"><div class="panel-head"><h3>Today's check-ins</h3></div>${moodBreakdown
+  const greeting = periodOfDay().toLowerCase();
+  return `${staffTopbar(`${esc(db?.school?.name || 'School')} · ${me?.role === 'admin' ? 'Admin' : 'Teacher'} portal`, 'Dashboard overview')}${activityBanner()}<section class="hero"><div><span class="eyebrow" style="color:#bfaee7">Class wellness</span><h2>Good ${greeting}, ${esc(tName)}</h2><p>Here's how your learners are doing today.</p></div><div class="date-pill">${todayLabel()}</div></section><div class="stats"><div class="stat"><div class="icon green">✓</div><strong>${stats.feelingOkay}</strong><span>Feeling okay</span></div><div class="stat"><div class="icon red">!</div><strong>${stats.activeAlerts}</strong><span>Active alerts</span></div><div class="stat"><div class="icon purple">⌁</div><strong>${stats.checkedInPercent}%</strong><span>Checked in</span></div><div class="stat"><div class="icon orange">◷</div><strong>${stats.awaitingFollowUp}</strong><span>Open cases</span></div></div><div class="grid"><section class="panel"><div class="panel-head"><h3>Active alerts</h3><button class="link" onclick="teacherNav='Alerts';render()">View all</button></div>${openAlerts.length ? openAlerts.map(alertRow).join('') : '<p class="empty">No active alerts.</p>'}</section><section class="panel"><div class="panel-head"><h3>Today's check-ins</h3></div>${moodBreakdown
     .map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x[0])}</span><b>${x[1]}</b></div><div class="bar"><i style="width:${x[2]}%;background:${x[3]}"></i></div></div>`)
     .join('') || '<p class="empty">No check-ins yet.</p>'}</section></div>`;
 }
@@ -182,53 +280,29 @@ function table(headers, rows) {
 }
 
 function learnersView() {
-  const rows = (db.learners || [])
+  const items = filterByName(db.learners || []);
+  const rows = items
     .map(
       (l) =>
         `<tr><td>${esc(l.code)}</td><td>${esc(l.name)}</td><td>${esc(l.grade)}</td><td>${esc(l.className)}</td></tr>`
     )
     .join('');
-  return `<div class="topbar"><div><span class="eyebrow">Directory</span><h1>Learners</h1></div></div><section class="panel">${table(['Code', 'Name', 'Grade', 'Class'], rows)}
-    <form class="inline-form" onsubmit="return createLearner(event)">
-      <h3>Add learner</h3>
-      <div class="fields">
-        <div class="field"><label>Name</label><input name="name" required></div>
-        <div class="field"><label>Code</label><input name="code" placeholder="032"></div>
-        <div class="field"><label>Grade</label><input name="grade" placeholder="Grade 5B"></div>
-        <div class="field"><label>Class</label><input name="className" placeholder="Class 2B"></div>
-        <div class="field"><label>PIN</label><input name="pin" value="1234"></div>
-      </div>
-      <button class="btn btn-primary" type="submit">Save learner</button>
-    </form></section>`;
+  const empty = items.length ? rows : `<tr><td colspan="4">${listFilter.trim() ? 'No learners match that name.' : 'No records yet.'}</td></tr>`;
+  return `${staffTopbar('Directory', 'Learners')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add learner', 'add-learner')}${table(['Code', 'Name', 'Grade', 'Class'], empty)}</section>`;
 }
 
 function teachersView() {
-  const rows = (db.teachers || []).map((t) => `<tr><td>${esc(t.name)}</td><td>${esc(t.email)}</td><td>${esc(t.className)}</td></tr>`).join('');
-  return `<div class="topbar"><div><span class="eyebrow">Administration</span><h1>Teachers</h1></div></div><section class="panel">${table(['Name', 'Email', 'Class'], rows)}
-    <form class="inline-form" onsubmit="return createTeacher(event)">
-      <h3>Add teacher</h3>
-      <div class="fields">
-        <div class="field"><label>Name</label><input name="name" required></div>
-        <div class="field"><label>Email</label><input name="email" type="email" required></div>
-        <div class="field"><label>Class</label><input name="className"></div>
-        <div class="field"><label>Temp password</label><input name="password" value="demo"></div>
-      </div>
-      <button class="btn btn-primary" type="submit">Save teacher</button>
-    </form></section>`;
+  const items = filterByName(db.teachers || []);
+  const rows = items.map((t) => `<tr><td>${esc(t.name)}</td><td>${esc(t.email)}</td><td>${esc(t.className)}</td></tr>`).join('');
+  const empty = items.length ? rows : `<tr><td colspan="3">${listFilter.trim() ? 'No teachers match that name.' : 'No records yet.'}</td></tr>`;
+  return `${staffTopbar('Administration', 'Teachers')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add teacher', 'add-teacher')}${table(['Name', 'Email', 'Class'], empty)}</section>`;
 }
 
 function classesView() {
-  const rows = (db.classes || []).map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.grade)}</td><td>${esc(c.teacherId)}</td></tr>`).join('');
-  return `<div class="topbar"><div><span class="eyebrow">Administration</span><h1>Classes / grades</h1></div></div><section class="panel">${table(['Class', 'Grade', 'Teacher ID'], rows)}
-    <form class="inline-form" onsubmit="return createClass(event)">
-      <h3>Add class</h3>
-      <div class="fields">
-        <div class="field"><label>Name</label><input name="name" required></div>
-        <div class="field"><label>Grade</label><input name="grade"></div>
-        <div class="field"><label>Teacher ID</label><input name="teacherId" value="1"></div>
-      </div>
-      <button class="btn btn-primary" type="submit">Save class</button>
-    </form></section>`;
+  const items = filterByName(db.classes || [], 'name');
+  const rows = items.map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.grade)}</td><td>${esc(c.teacherId)}</td></tr>`).join('');
+  const empty = items.length ? rows : `<tr><td colspan="3">${listFilter.trim() ? 'No classes match that name.' : 'No records yet.'}</td></tr>`;
+  return `${staffTopbar('Administration', 'Classes / grades')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add class', 'add-class')}${table(['Class', 'Grade', 'Teacher ID'], empty)}</section>`;
 }
 
 function alertsView() {
@@ -247,7 +321,14 @@ function casesView() {
 
 function reportsView() {
   const r = db.reports || {};
-  return `<div class="topbar"><div><span class="eyebrow">Reporting</span><h1>Basic activity</h1></div></div><div class="stats"><div class="stat"><strong>${r.totalCheckIns || 0}</strong><span>Check-ins</span></div><div class="stat"><strong>${r.totalAlerts || 0}</strong><span>Alerts</span></div><div class="stat"><strong>${r.openCases || 0}</strong><span>Open cases</span></div><div class="stat"><strong>${r.escalated || 0}</strong><span>Escalated</span></div></div>
+  const recent = (activity.recent || [])
+    .map(
+      (ev) =>
+        `<li><span class="badge ${ev.kind === 'login' ? 'purple' : 'green'}">${ev.kind === 'login' ? 'Sign-in' : 'Check-in'}</span> ${esc(ev.label)} <small>${esc(String(ev.at || '').replace('T', ' ').slice(0, 16))}</small></li>`
+    )
+    .join('');
+  return `${staffTopbar('Reporting', 'Basic activity')}${activityBanner()}<div class="stats"><div class="stat"><strong>${activity.learnerLoginsToday || 0}</strong><span>Learner sign-ins today</span></div><div class="stat"><strong>${activity.learnerCheckInsToday || 0}</strong><span>Check-ins today</span></div><div class="stat"><strong>${r.totalAlerts || 0}</strong><span>Alerts</span></div><div class="stat"><strong>${r.openCases || 0}</strong><span>Open cases</span></div></div>
+    <section class="panel"><h3>Recent learner activity</h3><ul class="timeline">${recent || '<li>No learner sign-ins or check-ins yet today.</li>'}</ul></section>
     <div class="grid"><section class="panel"><h3>By concern</h3>${(r.byConcern || []).map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x.label)}</span><b>${x.count}</b></div></div>`).join('') || '<p class="empty">No data yet.</p>'}</section>
     <section class="panel"><h3>By case status</h3>${(r.byStatus || []).map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x.label)}</span><b>${x.count}</b></div></div>`).join('') || '<p class="empty">No data yet.</p>'}</section></div>`;
 }
@@ -262,9 +343,9 @@ function auditView() {
 function settingsView() {
   const s = db.school || {};
   if (me?.role !== 'admin') {
-    return `<div class="topbar"><div><span class="eyebrow">Account</span><h1>Settings</h1></div></div><section class="panel"><p>Signed in as <b>${esc(me?.name)}</b> (${esc(me?.role)}).</p><p>Learner records are limited to your assigned class.</p></section>`;
+    return `${staffTopbar('Account', 'Settings')}<section class="panel"><p>Signed in as <b>${esc(me?.name)}</b> (${esc(me?.role)}).</p><p>Learner records are limited to your assigned class.</p><button type="button" class="btn btn-light" onclick="logout()">Sign out</button></section>`;
   }
-  return `<div class="topbar"><div><span class="eyebrow">School administration</span><h1>School configuration</h1></div></div><section class="panel">
+  return `${staffTopbar('School administration', 'School configuration')}<section class="panel"><button type="button" class="btn btn-light settings-signout" onclick="logout()">Sign out</button>
     <form class="inline-form" onsubmit="return saveSchool(event)">
       <div class="fields">
         <div class="field"><label>School name</label><input name="name" value="${esc(s.name)}" required></div>
@@ -331,7 +412,7 @@ function staff() {
     content = (views[teacherNav] || staffDashboard)();
   }
   const side = screen === 'dashboard' ? teacherNav : 'Cases';
-  return `<div class="shell">${sidebar(side)}<main class="main">${content}</main></div><div class="demo-note">Mivali · Phase 3 MVP · ${esc(me?.role)}</div>`;
+  return `<div class="shell">${sidebar(side)}<main class="main">${content}</main></div>${modalLayer()}<div class="demo-note">Mivali · Phase 3 MVP · ${esc(me?.role)}</div>`;
 }
 
 function render() {
@@ -340,8 +421,19 @@ function render() {
   const target = statePage[key];
   if (target && location.pathname.split('/').pop() !== target) history.pushState({ mode, screen, teacherNav, caseId }, '', target);
   app.innerHTML = (mode === 'learner' ? learner() : staff()) + ytgCredit;
+  if (mode === 'staff' || mode === 'learner') startLiveClock();
   window.scrollTo(0, 0);
 }
+
+window.openModal = (id) => {
+  activeModal = id;
+  render();
+};
+
+window.closeModal = () => {
+  activeModal = null;
+  render();
+};
 
 window.openCase = (id) => {
   caseId = id;
@@ -378,6 +470,7 @@ window.createLearner = async (event) => {
     body: JSON.stringify({ name: f.name.value, code: f.code.value, grade: f.grade.value, className: f.className.value, pin: f.pin.value }),
   });
   await loadData();
+  activeModal = null;
   render();
   return false;
 };
@@ -390,6 +483,7 @@ window.createTeacher = async (event) => {
     body: JSON.stringify({ name: f.name.value, email: f.email.value, className: f.className.value, password: f.password.value }),
   });
   await loadData();
+  activeModal = null;
   render();
   return false;
 };
@@ -402,6 +496,7 @@ window.createClass = async (event) => {
     body: JSON.stringify({ name: f.name.value, grade: f.grade.value, teacherId: f.teacherId.value }),
   });
   await loadData();
+  activeModal = null;
   render();
   return false;
 };
