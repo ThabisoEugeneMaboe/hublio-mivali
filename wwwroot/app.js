@@ -211,7 +211,7 @@ function learner() {
 
   if (screen === 'home')
     return phone(
-      `<span class="eyebrow">${new Date().toLocaleDateString(undefined, { weekday: 'long' })} check-in</span><h1>${timeGreeting()},<br>${esc(learnerName)} ⭐</h1><p>How are you feeling today?</p><div class="moods">${[
+      `<span class="eyebrow">${new Date().toLocaleDateString(undefined, { weekday: 'long' })} check-in</span><p class="learner-identity">Which learner is this? <strong>${esc(learnerName)}</strong></p><h1>${timeGreeting()},<br>${esc(learnerName)} ⭐</h1><p>How are you feeling today?</p><div class="moods">${[
         ['😊', 'Happy'],
         ['😐', 'Okay'],
         ['😴', 'Tired'],
@@ -227,7 +227,7 @@ function learner() {
     );
   if (screen === 'concern')
     return phone(
-      `<button class="back" onclick="screen='home';render()">←</button><span class="eyebrow" style="margin-top:25px">Step 1 of 2</span><h1>What is worrying you?</h1><p>Choose the one that feels closest. Your teacher will listen.</p><div class="concerns">${[
+      `<button class="back" onclick="screen='home';render()">←</button><span class="eyebrow" style="margin-top:25px">Step 1 of 2 · ${esc(learnerName)}</span><p class="learner-identity">Learner: <strong>${esc(learnerName)}</strong></p><h1>What is worrying you, ${esc(learnerName)}?</h1><p>Choose the one that feels closest. Your teacher will listen.</p><div class="concerns">${[
         'Bullying or safety',
         'Friends or classmates',
         'School work',
@@ -288,7 +288,17 @@ function staffDashboard() {
 }
 
 function table(headers, rows) {
-  return `<div class="table-wrap"><table class="data-table"><thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="8">No records yet.</td></tr>'}</tbody></table></div>`;
+  const cols = headers.length;
+  return `<div class="table-wrap"><table class="data-table"><thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows || `<tr><td colspan="${cols}">No records yet.</td></tr>`}</tbody></table></div>`;
+}
+
+function removeBtn(type, id) {
+  const safeId = encodeURIComponent(String(id));
+  return `<button type="button" class="link row-delete" onclick="deleteRecord('${type}','${safeId}')">Remove</button>`;
+}
+
+function exportToolbar(kind) {
+  return `<div class="export-toolbar"><button type="button" class="btn btn-light btn-sm" onclick="shareReport('${kind}')">Share</button><button type="button" class="btn btn-light btn-sm" onclick="printReport('${kind}')">Print</button><button type="button" class="btn btn-light btn-sm" onclick="downloadReportCsv('${kind}')">Download CSV</button><button type="button" class="btn btn-light btn-sm" onclick="downloadReportPdf('${kind}')">Download PDF</button></div>`;
 }
 
 function learnersView() {
@@ -296,25 +306,29 @@ function learnersView() {
   const rows = items
     .map(
       (l) =>
-        `<tr><td>${esc(l.code)}</td><td>${esc(l.name)}</td><td>${esc(l.grade)}</td><td>${esc(l.className)}</td></tr>`
+        `<tr><td>${esc(l.code)}</td><td>${esc(l.name)}</td><td>${esc(l.grade)}</td><td>${esc(l.className)}</td><td>${removeBtn('learners', l.id)}</td></tr>`
     )
     .join('');
-  const empty = items.length ? rows : `<tr><td colspan="4">${listFilter.trim() ? 'No learners match that name.' : 'No records yet.'}</td></tr>`;
-  return `${staffTopbar('Directory', 'Learners')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add learner', 'add-learner')}${table(['Code', 'Name', 'Grade', 'Class'], empty)}</section>`;
+  const empty = items.length ? rows : `<tr><td colspan="5">${listFilter.trim() ? 'No learners match that name.' : 'No records yet.'}</td></tr>`;
+  return `${staffTopbar('Directory', 'Learners')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add learner', 'add-learner')}${table(['Code', 'Name', 'Grade', 'Class', 'Actions'], empty)}</section>`;
 }
 
 function teachersView() {
   const items = filterByName(db.teachers || []);
-  const rows = items.map((t) => `<tr><td>${esc(t.name)}</td><td>${esc(t.email)}</td><td>${esc(t.className)}</td></tr>`).join('');
-  const empty = items.length ? rows : `<tr><td colspan="3">${listFilter.trim() ? 'No teachers match that name.' : 'No records yet.'}</td></tr>`;
-  return `${staffTopbar('Administration', 'Teachers')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add teacher', 'add-teacher')}${table(['Name', 'Email', 'Class'], empty)}</section>`;
+  const rows = items
+    .map((t) => `<tr><td>${esc(t.name)}</td><td>${esc(t.email)}</td><td>${esc(t.className)}</td><td>${removeBtn('teachers', t.id)}</td></tr>`)
+    .join('');
+  const empty = items.length ? rows : `<tr><td colspan="4">${listFilter.trim() ? 'No teachers match that name.' : 'No records yet.'}</td></tr>`;
+  return `${staffTopbar('Administration', 'Teachers')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add teacher', 'add-teacher')}${table(['Name', 'Email', 'Class', 'Actions'], empty)}</section>`;
 }
 
 function classesView() {
   const items = filterByName(db.classes || [], 'name');
-  const rows = items.map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.grade)}</td><td>${esc(c.teacherId)}</td></tr>`).join('');
-  const empty = items.length ? rows : `<tr><td colspan="3">${listFilter.trim() ? 'No classes match that name.' : 'No records yet.'}</td></tr>`;
-  return `${staffTopbar('Administration', 'Classes / grades')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add class', 'add-class')}${table(['Class', 'Grade', 'Teacher ID'], empty)}</section>`;
+  const rows = items
+    .map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.grade)}</td><td>${esc(c.teacherId)}</td><td>${removeBtn('classes', c.id)}</td></tr>`)
+    .join('');
+  const empty = items.length ? rows : `<tr><td colspan="4">${listFilter.trim() ? 'No classes match that name.' : 'No records yet.'}</td></tr>`;
+  return `${staffTopbar('Administration', 'Classes / grades')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add class', 'add-class')}${table(['Class', 'Grade', 'Teacher ID', 'Actions'], empty)}</section>`;
 }
 
 function alertsView() {
@@ -339,17 +353,17 @@ function reportsView() {
         `<li><span class="badge ${ev.kind === 'login' ? 'purple' : 'green'}">${ev.kind === 'login' ? 'Sign-in' : 'Check-in'}</span> ${esc(ev.label)} <small>${esc(String(ev.at || '').replace('T', ' ').slice(0, 16))}</small></li>`
     )
     .join('');
-  return `${staffTopbar('Reporting', 'Basic activity')}${activityBanner()}<div class="stats"><div class="stat"><strong>${activity.learnerLoginsToday || 0}</strong><span>Learner sign-ins today</span></div><div class="stat"><strong>${activity.learnerCheckInsToday || 0}</strong><span>Check-ins today</span></div><div class="stat"><strong>${r.totalAlerts || 0}</strong><span>Alerts</span></div><div class="stat"><strong>${r.openCases || 0}</strong><span>Open cases</span></div></div>
+  return `${staffTopbar('Reporting', 'Basic activity')}${activityBanner()}${exportToolbar('reports')}<div id="print-area-reports" class="print-area"><div class="stats"><div class="stat"><strong>${activity.learnerLoginsToday || 0}</strong><span>Learner sign-ins today</span></div><div class="stat"><strong>${activity.learnerCheckInsToday || 0}</strong><span>Check-ins today</span></div><div class="stat"><strong>${r.totalAlerts || 0}</strong><span>Alerts</span></div><div class="stat"><strong>${r.openCases || 0}</strong><span>Open cases</span></div></div>
     <section class="panel"><h3>Recent learner activity</h3><ul class="timeline">${recent || '<li>No learner sign-ins or check-ins yet today.</li>'}</ul></section>
     <div class="grid"><section class="panel"><h3>By concern</h3>${(r.byConcern || []).map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x.label)}</span><b>${x.count}</b></div></div>`).join('') || '<p class="empty">No data yet.</p>'}</section>
-    <section class="panel"><h3>By case status</h3>${(r.byStatus || []).map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x.label)}</span><b>${x.count}</b></div></div>`).join('') || '<p class="empty">No data yet.</p>'}</section></div>`;
+    <section class="panel"><h3>By case status</h3>${(r.byStatus || []).map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x.label)}</span><b>${x.count}</b></div></div>`).join('') || '<p class="empty">No data yet.</p>'}</section></div></div>`;
 }
 
 function auditView() {
   const rows = (db.audit || [])
     .map((a) => `<tr><td>${esc(a.at).replace('T', ' ').slice(0, 16)}</td><td>${esc(a.actor)}</td><td>${esc(a.role)}</td><td>${esc(a.action)}</td><td>${esc(a.detail)}</td></tr>`)
     .join('');
-  return `<div class="topbar"><div><span class="eyebrow">Accountability</span><h1>Audit trail</h1></div></div><section class="panel">${table(['When', 'Who', 'Role', 'Action', 'Detail'], rows)}</section>`;
+  return `${staffTopbar('Accountability', 'Audit trail')}${exportToolbar('audit')}<section id="print-area-audit" class="panel print-area">${table(['When', 'Who', 'Role', 'Action', 'Detail'], rows)}</section>`;
 }
 
 function settingsView() {
@@ -627,6 +641,114 @@ window.saveSchool = async (event) => {
 window.logout = async () => {
   await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'same-origin' });
   location.href = 'login.html';
+};
+
+window.deleteRecord = async (type, id) => {
+  const label = type === 'learners' ? 'learner' : type === 'teachers' ? 'teacher' : 'class';
+  if (!confirm(`Remove this ${label}? They will be deleted from the directory.`)) return;
+  await api(`/${type}/${decodeURIComponent(id)}`, { method: 'DELETE' });
+  await loadData();
+  render();
+};
+
+function csvEscape(value) {
+  const text = String(value ?? '');
+  if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  return text;
+}
+
+function downloadBlob(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function reportSummaryLines() {
+  const r = db.reports || {};
+  const lines = [
+    ['Mivali activity report', todayLabel()],
+    ['Learner sign-ins today', activity.learnerLoginsToday || 0],
+    ['Check-ins today', activity.learnerCheckInsToday || 0],
+    ['Total alerts', r.totalAlerts || 0],
+    ['Open cases', r.openCases || 0],
+    [],
+    ['Recent activity', 'When'],
+  ];
+  (activity.recent || []).forEach((ev) => lines.push([ev.label, String(ev.at || '').replace('T', ' ').slice(0, 16)]));
+  lines.push([], ['By concern', 'Count']);
+  (r.byConcern || []).forEach((x) => lines.push([x.label, x.count]));
+  lines.push([], ['By case status', 'Count']);
+  (r.byStatus || []).forEach((x) => lines.push([x.label, x.count]));
+  return lines;
+}
+
+window.downloadReportCsv = (kind) => {
+  let rows;
+  if (kind === 'audit') {
+    rows = [['When', 'Who', 'Role', 'Action', 'Detail']];
+    (db.audit || []).forEach((a) => rows.push([a.at, a.actor, a.role, a.action, a.detail]));
+  } else {
+    rows = reportSummaryLines();
+  }
+  const csv = rows.map((row) => row.map(csvEscape).join(',')).join('\n');
+  downloadBlob(`mivali-${kind}-${new Date().toISOString().slice(0, 10)}.csv`, csv, 'text/csv;charset=utf-8');
+};
+
+window.downloadReportPdf = (kind) => {
+  const areaId = kind === 'audit' ? 'print-area-audit' : 'print-area-reports';
+  const area = document.getElementById(areaId);
+  if (!area) return;
+  const w = window.open('', '_blank');
+  if (!w) {
+    printReport(kind);
+    return;
+  }
+  w.document.write(`<!doctype html><html><head><title>Mivali ${kind}</title><link rel="stylesheet" href="styles.css"></head><body><h1>Mivali ${kind === 'audit' ? 'Audit trail' : 'Activity report'}</h1><p>${todayLabel()}</p>${area.innerHTML}</body></html>`);
+  w.document.close();
+  w.focus();
+  w.print();
+};
+
+window.printReport = (kind) => {
+  document.body.classList.add('print-mode');
+  document.body.dataset.printTarget = kind === 'audit' ? 'audit' : 'reports';
+  window.print();
+  window.addEventListener(
+    'afterprint',
+    () => {
+      document.body.classList.remove('print-mode');
+      delete document.body.dataset.printTarget;
+    },
+    { once: true }
+  );
+};
+
+window.shareReport = async (kind) => {
+  const lines =
+    kind === 'audit'
+      ? (db.audit || []).slice(0, 15).map((a) => `${a.at}: ${a.actor} — ${a.action}`)
+      : reportSummaryLines()
+          .filter((r) => r.length)
+          .map((r) => r.join(': '));
+  const text = `Mivali ${kind} (${todayLabel()})\n\n${lines.join('\n')}`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `Mivali ${kind}`, text });
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    alert('Report summary copied — paste into email or WhatsApp to share.');
+  } else {
+    prompt('Copy this report summary:', text);
+  }
 };
 
 window.handleOkay = async () => {

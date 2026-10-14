@@ -586,6 +586,49 @@ function createClass(user, payload) {
   return { ok: true, class: item };
 }
 
+function deleteLearner(user, id) {
+  if (!['admin', 'teacher'].includes(user.role)) return { error: 'Forbidden', status: 403 };
+  const data = load();
+  const learner = data.learners.find((l) => String(l.id) === String(id) || String(l.code) === String(id));
+  if (!learner) return { error: 'Learner not found', status: 404 };
+  const scoped = teacherLearnerIds(data, user);
+  if (user.role === 'teacher' && !scoped.includes(learner.id)) return { error: 'Forbidden', status: 403 };
+  data.learners = data.learners.filter((l) => l.id !== learner.id);
+  data.users.forEach((u) => {
+    if (String(u.learnerId) === String(learner.id)) u.active = false;
+  });
+  audit(data, user, 'learner_deleted', `${learner.name} (${learner.code})`);
+  save(data);
+  return { ok: true };
+}
+
+function deleteTeacher(user, id) {
+  const denied = requireAdmin(user);
+  if (denied) return denied;
+  const data = load();
+  const teacher = data.teachers.find((t) => String(t.id) === String(id));
+  if (!teacher) return { error: 'Teacher not found', status: 404 };
+  data.teachers = data.teachers.filter((t) => t.id !== teacher.id);
+  data.users.forEach((u) => {
+    if (String(u.teacherId) === String(teacher.id)) u.active = false;
+  });
+  audit(data, user, 'teacher_deleted', teacher.name);
+  save(data);
+  return { ok: true };
+}
+
+function deleteClass(user, id) {
+  const denied = requireAdmin(user);
+  if (denied) return denied;
+  const data = load();
+  const item = data.classes.find((c) => String(c.id) === String(id));
+  if (!item) return { error: 'Class not found', status: 404 };
+  data.classes = data.classes.filter((c) => c.id !== item.id);
+  audit(data, user, 'class_deleted', item.name);
+  save(data);
+  return { ok: true };
+}
+
 module.exports = {
   MESSAGE_MAX,
   getSession,
@@ -599,6 +642,9 @@ module.exports = {
   createTeacher,
   createLearner,
   createClass,
+  deleteLearner,
+  deleteTeacher,
+  deleteClass,
   updateSchool,
   load,
 };

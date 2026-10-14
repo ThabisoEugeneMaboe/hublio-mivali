@@ -66,3 +66,13 @@
 .voice-playback{width:100%;margin-top:8px}
 .case-voice{margin-top:12px}
 .case-voice small{display:block;color:var(--muted);margin-bottom:6px;font-weight:800;letter-spacing:.06em}
+.learner-identity{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#f3efff;color:#4a3d7a;font-size:14px}
+.export-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.row-delete{color:var(--coral)!important;font-weight:800}
+@media print{
+  .sidebar,.demo-note,.ytg-credit,.activity-alert,.export-toolbar,.clock-block,.directory-toolbar,.modal-backdrop,.modal{display:none!important}
+  .shell{grid-template-columns:1fr}
+  .main{padding:12px;max-width:100%}
+  body.print-mode[data-print-target=audit] .main>:not(#print-area-audit):not(.staff-topbar){display:none!important}
+  body.print-mode[data-print-target=reports] .main>:not(#print-area-reports):not(.staff-topbar){display:none!important}
+}

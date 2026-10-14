@@ -172,6 +172,27 @@ async function handleApi(req, res, url) {
     return sendJson(res, 201, result);
   }
 
+  const learnerDel = match(pathname, '/api/learners/:id');
+  if (learnerDel && method === 'DELETE') {
+    const result = mvp.deleteLearner(user, learnerDel.id);
+    if (result.error) return sendJson(res, result.status || 400, result);
+    return sendJson(res, 200, result);
+  }
+
+  const teacherDel = match(pathname, '/api/teachers/:id');
+  if (teacherDel && method === 'DELETE') {
+    const result = mvp.deleteTeacher(user, teacherDel.id);
+    if (result.error) return sendJson(res, result.status || 400, result);
+    return sendJson(res, 200, result);
+  }
+
+  const classDel = match(pathname, '/api/classes/:id');
+  if (classDel && method === 'DELETE') {
+    const result = mvp.deleteClass(user, classDel.id);
+    if (result.error) return sendJson(res, result.status || 400, result);
+    return sendJson(res, 200, result);
+  }
+
   if (pathname === '/api/school' && method === 'PUT') {
     const result = mvp.updateSchool(user, await readBody(req));
     if (result.error) return sendJson(res, result.status || 400, result);
