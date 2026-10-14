@@ -20,7 +20,7 @@ function readBody(req) {
     let body = '';
     req.on('data', (chunk) => {
       body += chunk;
-      if (body.length > 1e6) {
+      if (body.length > 3e6) {
         req.destroy();
         reject(new Error('Payload too large'));
       }

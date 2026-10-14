@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const DATA_FILE = path.join(__dirname, 'data.json');
 const SESSION_HOURS = 12;
 const MESSAGE_MAX = 280;
+const VOICE_NOTE_MAX = 900000;
 const CRITICAL_CONCERNS = ['Bullying or safety', 'Home or family'];
 
 const sessions = new Map();
@@ -360,6 +361,10 @@ function submitCheckIn(user, payload) {
   const learner = data.learners.find((l) => String(l.id) === String(user.learnerId));
   if (!learner) return { error: 'Learner profile not found', status: 400 };
   const message = String(payload.message || '').slice(0, MESSAGE_MAX);
+  let voiceNote = null;
+  if (!payload.isOkay && typeof payload.voiceNote === 'string' && payload.voiceNote.startsWith('data:audio/')) {
+    voiceNote = payload.voiceNote.slice(0, VOICE_NOTE_MAX);
+  }
   const concern = payload.concern || '';
   const mood = payload.mood || 'Okay';
   const isOkay = Boolean(payload.isOkay);
@@ -370,6 +375,7 @@ function submitCheckIn(user, payload) {
     isOkay,
     concern: isOkay ? null : concern,
     message: isOkay ? '' : message,
+    voiceNote: isOkay ? null : voiceNote,
     submittedAt: nowIso(),
   };
   data.checkIns.push(checkIn);
@@ -392,6 +398,7 @@ function submitCheckIn(user, payload) {
       color: critical ? 'red' : 'purple',
       concern,
       message,
+      voiceNote,
       status: 'Open',
     };
     data.alerts.unshift(alert);
@@ -404,6 +411,7 @@ function submitCheckIn(user, payload) {
       grade: learner.grade,
       concern,
       message,
+      voiceNote,
       status: critical ? 'Escalated' : 'Open',
       createdAt: nowIso(),
       history: [

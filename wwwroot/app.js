@@ -15,6 +15,12 @@ let caseId = '';
 let mood = 'Happy';
 let concern = 'Bullying or safety';
 let learnerMessage = '';
+let voiceNoteDataUrl = null;
+let voiceMediaRecorder = null;
+let voiceRecordStream = null;
+let voiceRecordTimer = null;
+let voiceRecordSeconds = 0;
+const VOICE_MAX_SECONDS = 45;
 
 const currentPage = location.pathname.split('/').pop() || 'index.html';
 const pageState = {
@@ -93,6 +99,13 @@ function periodOfDay(date = new Date()) {
   if (h < 12) return 'Morning';
   if (h < 17) return 'Afternoon';
   return 'Evening';
+}
+
+function timeGreeting(date = new Date()) {
+  const h = date.getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
 }
 
 function staffClockHtml() {
@@ -198,7 +211,7 @@ function learner() {
 
   if (screen === 'home')
     return phone(
-      `<span class="eyebrow">${new Date().toLocaleDateString(undefined, { weekday: 'long' })} check-in</span><h1>Good morning,<br>${esc(learnerName)} ⭐</h1><p>How are you feeling today?</p><div class="moods">${[
+      `<span class="eyebrow">${new Date().toLocaleDateString(undefined, { weekday: 'long' })} check-in</span><h1>${timeGreeting()},<br>${esc(learnerName)} ⭐</h1><p>How are you feeling today?</p><div class="moods">${[
         ['😊', 'Happy'],
         ['😐', 'Okay'],
         ['😴', 'Tired'],
@@ -231,7 +244,7 @@ function learner() {
     );
   if (screen === 'note')
     return phone(
-      `<button class="back" onclick="screen='concern';render()">←</button><span class="eyebrow" style="margin-top:25px">Step 2 of 2 · Optional</span><h1>Would you like to tell us more?</h1><p>You can leave this blank. Keep it short — a teacher will still check on you.</p><textarea class="textarea" maxlength="280" placeholder="Write here if you want to…">${esc(learnerMessage)}</textarea><div class="big-actions"><button class="btn btn-alert" onclick="handleSendCheckIn()">Send my check-in</button><button class="btn btn-light" onclick="handleSendCheckIn(true)">Skip message</button></div>`,
+      `<button class="back" onclick="screen='concern';render()">←</button><span class="eyebrow" style="margin-top:25px">Step 2 of 2 · Optional</span><h1>Would you like to tell us more?</h1><p>Type a short note or record a voice message — both are optional. A teacher will still check on you.</p><label class="field-label" for="learner-message">Type a message</label><textarea id="learner-message" class="textarea" maxlength="280" placeholder="Write here if you want to…" oninput="learnerMessage=this.value">${esc(learnerMessage)}</textarea><div class="voice-panel"><p class="voice-label">Or record a voice message</p><div class="voice-controls"><button type="button" class="btn btn-light voice-btn" id="voice-record-btn">🎙 Start recording</button><button type="button" class="btn btn-light voice-btn" id="voice-clear-btn" hidden>Remove recording</button></div><p class="voice-status" id="voice-status">Up to ${VOICE_MAX_SECONDS} seconds</p><audio id="voice-preview" class="voice-preview" controls hidden></audio></div><div class="big-actions"><button class="btn btn-alert" onclick="handleSendCheckIn()">Send my check-in</button><button class="btn btn-light" onclick="handleSendCheckIn(true)">Skip message</button></div>`,
       false
     );
   if (screen === 'sent')
@@ -269,8 +282,7 @@ function alertRow(a) {
 function staffDashboard() {
   const tName = me?.name || 'there';
   const openAlerts = alerts.filter((a) => a.status !== 'Resolved');
-  const greeting = periodOfDay().toLowerCase();
-  return `${staffTopbar(`${esc(db?.school?.name || 'School')} · ${me?.role === 'admin' ? 'Admin' : 'Teacher'} portal`, 'Dashboard overview')}${activityBanner()}<section class="hero"><div><span class="eyebrow" style="color:#bfaee7">Class wellness</span><h2>Good ${greeting}, ${esc(tName)}</h2><p>Here's how your learners are doing today.</p></div><div class="date-pill">${todayLabel()}</div></section><div class="stats"><div class="stat"><div class="icon green">✓</div><strong>${stats.feelingOkay}</strong><span>Feeling okay</span></div><div class="stat"><div class="icon red">!</div><strong>${stats.activeAlerts}</strong><span>Active alerts</span></div><div class="stat"><div class="icon purple">⌁</div><strong>${stats.checkedInPercent}%</strong><span>Checked in</span></div><div class="stat"><div class="icon orange">◷</div><strong>${stats.awaitingFollowUp}</strong><span>Open cases</span></div></div><div class="grid"><section class="panel"><div class="panel-head"><h3>Active alerts</h3><button class="link" onclick="teacherNav='Alerts';render()">View all</button></div>${openAlerts.length ? openAlerts.map(alertRow).join('') : '<p class="empty">No active alerts.</p>'}</section><section class="panel"><div class="panel-head"><h3>Today's check-ins</h3></div>${moodBreakdown
+  return `${staffTopbar(`${esc(db?.school?.name || 'School')} · ${me?.role === 'admin' ? 'Admin' : 'Teacher'} portal`, 'Dashboard overview')}${activityBanner()}<section class="hero"><div><span class="eyebrow" style="color:#bfaee7">Class wellness</span><h2>${timeGreeting()}, ${esc(tName)}</h2><p>Here's how your learners are doing today.</p></div><div class="date-pill">${todayLabel()}</div></section><div class="stats"><div class="stat"><div class="icon green">✓</div><strong>${stats.feelingOkay}</strong><span>Feeling okay</span></div><div class="stat"><div class="icon red">!</div><strong>${stats.activeAlerts}</strong><span>Active alerts</span></div><div class="stat"><div class="icon purple">⌁</div><strong>${stats.checkedInPercent}%</strong><span>Checked in</span></div><div class="stat"><div class="icon orange">◷</div><strong>${stats.awaitingFollowUp}</strong><span>Open cases</span></div></div><div class="grid"><section class="panel"><div class="panel-head"><h3>Active alerts</h3><button class="link" onclick="teacherNav='Alerts';render()">View all</button></div>${openAlerts.length ? openAlerts.map(alertRow).join('') : '<p class="empty">No active alerts.</p>'}</section><section class="panel"><div class="panel-head"><h3>Today's check-ins</h3></div>${moodBreakdown
     .map((x) => `<div class="bar-row"><div class="bar-label"><span>${esc(x[0])}</span><b>${x[1]}</b></div><div class="bar"><i style="width:${x[2]}%;background:${x[3]}"></i></div></div>`)
     .join('') || '<p class="empty">No check-ins yet.</p>'}</section></div>`;
 }
@@ -362,11 +374,15 @@ function caseView() {
   if (!cse && !a) return `<section class="panel"><p>No case selected.</p></section>`;
   const item = cse || {};
   const msg = item.message || a?.message || '';
+  const voice = item.voiceNote || a?.voiceNote || '';
+  const voiceHtml = voice
+    ? `<div class="case-voice"><small>VOICE MESSAGE</small><audio controls class="voice-playback" src="${voice}"></audio></div>`
+    : '';
   const history = (item.history || []).map((h) => `<li><b>${esc(h.event)}</b><small> · ${esc(h.by)} · ${esc(h.at).replace('T', ' ').slice(0, 16)}</small>${h.note ? `<p>${esc(h.note)}</p>` : ''}</li>`).join('');
   return `<div class="topbar"><div><button class="back" onclick="teacherNav='Cases';screen='dashboard';render()">←</button><span class="eyebrow" style="margin-left:15px">Case file · ${esc(item.id || a.id)}</span><h1 style="margin-top:12px">${esc(a?.type || item.concern || 'Learner case')}</h1></div><span class="badge ${badgeClass(item.status || a?.status)}">${esc(item.status || a?.status)}</span></div>
     <div class="case-wrap"><div class="case-card"><div class="panel-head"><div><h3>${esc(item.learnerName || a?.name)}</h3><p>${esc(item.grade || a?.grade)} · Code ${esc(item.learnerCode || a?.learnerCode)}</p></div><span class="learner-id">${esc(item.learnerCode || a?.id)}</span></div>
     <div class="case-meta"><span class="badge orange">${esc(item.concern || a?.concern)}</span><span class="badge ${badgeClass(a?.level)}">${esc(a?.level || 'Alert')}</span></div>
-    <div class="case-note"><small>LEARNER'S OPTIONAL MESSAGE</small><p>${msg ? `"${esc(msg)}"` : 'No message provided.'}</p></div>
+    <div class="case-note"><small>LEARNER'S OPTIONAL MESSAGE</small><p>${msg ? `"${esc(msg)}"` : voice ? 'Voice message only.' : 'No message provided.'}</p>${voiceHtml}</div>
     <h3>Case history</h3><ul class="timeline">${history || '<li>No history yet.</li>'}</ul>
     <div class="big-actions" style="max-width:360px;margin-top:25px">
       ${a?.status === 'Open' ? `<button class="btn btn-primary" onclick="acknowledgeCase('${esc(a.id)}','${esc(item.id)}')">Acknowledge & start follow-up</button>` : `<button class="btn btn-primary" onclick="screen='followup';render()">Record follow-up</button>`}
@@ -422,7 +438,98 @@ function render() {
   if (target && location.pathname.split('/').pop() !== target) history.pushState({ mode, screen, teacherNav, caseId }, '', target);
   app.innerHTML = (mode === 'learner' ? learner() : staff()) + ytgCredit;
   if (mode === 'staff' || mode === 'learner') startLiveClock();
+  if (mode === 'learner' && screen === 'note') setupVoiceMessageUi();
   window.scrollTo(0, 0);
+}
+
+function stopVoiceRecordingInternal() {
+  if (voiceRecordTimer) {
+    clearInterval(voiceRecordTimer);
+    voiceRecordTimer = null;
+  }
+  if (voiceMediaRecorder && voiceMediaRecorder.state === 'recording') voiceMediaRecorder.stop();
+}
+
+function resetVoiceStream() {
+  if (voiceRecordStream) {
+    voiceRecordStream.getTracks().forEach((t) => t.stop());
+    voiceRecordStream = null;
+  }
+}
+
+function setupVoiceMessageUi() {
+  const recordBtn = document.getElementById('voice-record-btn');
+  const clearBtn = document.getElementById('voice-clear-btn');
+  const statusEl = document.getElementById('voice-status');
+  const preview = document.getElementById('voice-preview');
+  if (!recordBtn || !statusEl) return;
+
+  const syncPreview = () => {
+    if (preview && voiceNoteDataUrl) {
+      preview.src = voiceNoteDataUrl;
+      preview.hidden = false;
+      if (clearBtn) clearBtn.hidden = false;
+      statusEl.textContent = 'Recording saved — tap Send or record again.';
+    }
+  };
+  syncPreview();
+
+  recordBtn.onclick = async () => {
+    if (voiceMediaRecorder && voiceMediaRecorder.state === 'recording') {
+      stopVoiceRecordingInternal();
+      recordBtn.textContent = '🎙 Start recording';
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      statusEl.textContent = 'Voice recording is not supported on this browser.';
+      return;
+    }
+    try {
+      resetVoiceStream();
+      voiceRecordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const chunks = [];
+      voiceMediaRecorder = new MediaRecorder(voiceRecordStream);
+      voiceRecordSeconds = 0;
+      statusEl.textContent = 'Recording… 0s';
+      recordBtn.textContent = '⏹ Stop recording';
+      voiceMediaRecorder.ondataavailable = (e) => {
+        if (e.data.size) chunks.push(e.data);
+      };
+      voiceMediaRecorder.onstop = () => {
+        resetVoiceStream();
+        if (!chunks.length) return;
+        const blob = new Blob(chunks, { type: voiceMediaRecorder.mimeType || 'audio/webm' });
+        const reader = new FileReader();
+        reader.onload = () => {
+          voiceNoteDataUrl = reader.result;
+          syncPreview();
+        };
+        reader.readAsDataURL(blob);
+        recordBtn.textContent = '🎙 Start recording';
+      };
+      voiceMediaRecorder.start();
+      voiceRecordTimer = setInterval(() => {
+        voiceRecordSeconds += 1;
+        statusEl.textContent = `Recording… ${voiceRecordSeconds}s`;
+        if (voiceRecordSeconds >= VOICE_MAX_SECONDS) stopVoiceRecordingInternal();
+      }, 1000);
+    } catch {
+      statusEl.textContent = 'Microphone access was blocked. Allow the mic to record.';
+      resetVoiceStream();
+    }
+  };
+
+  if (clearBtn) {
+    clearBtn.onclick = () => {
+      voiceNoteDataUrl = null;
+      if (preview) {
+        preview.hidden = true;
+        preview.removeAttribute('src');
+      }
+      clearBtn.hidden = true;
+      statusEl.textContent = `Up to ${VOICE_MAX_SECONDS} seconds`;
+    };
+  }
 }
 
 window.openModal = (id) => {
@@ -529,9 +636,13 @@ window.handleOkay = async () => {
 };
 
 window.handleSendCheckIn = async (skip) => {
-  const textarea = document.querySelector('.textarea');
-  const message = skip ? '' : textarea ? textarea.value : learnerMessage;
-  await api('/checkin', { method: 'POST', body: JSON.stringify({ mood, isOkay: false, concern, message }) });
+  stopVoiceRecordingInternal();
+  const textarea = document.getElementById('learner-message') || document.querySelector('.textarea');
+  const message = skip ? '' : textarea ? textarea.value.trim() : learnerMessage;
+  const voiceNote = skip ? null : voiceNoteDataUrl;
+  await api('/checkin', { method: 'POST', body: JSON.stringify({ mood, isOkay: false, concern, message, voiceNote }) });
+  voiceNoteDataUrl = null;
+  learnerMessage = '';
   screen = 'sent';
   render();
 };
