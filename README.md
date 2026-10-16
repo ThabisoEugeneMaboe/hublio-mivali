@@ -2,6 +2,10 @@
 
 Learner wellbeing check-in, teacher alerts, case management, and school administration. **Powered by Mivali.**
 
+**Repository:** https://github.com/ThabisoEugeneMaboe/hublio-mivali  
+**Live app:** https://hublio-mivali.onrender.com/login.html  
+**Developer handoff:** see [HANDOFF.md](HANDOFF.md)
+
 ## Run locally
 
 ```bat
