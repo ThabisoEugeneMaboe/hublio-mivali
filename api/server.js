@@ -172,23 +172,38 @@ async function handleApi(req, res, url) {
     return sendJson(res, 201, result);
   }
 
-  const learnerDel = match(pathname, '/api/learners/:id');
-  if (learnerDel && method === 'DELETE') {
-    const result = mvp.deleteLearner(user, learnerDel.id);
+  const learnerId = match(pathname, '/api/learners/:id');
+  if (learnerId && method === 'DELETE') {
+    const result = mvp.deleteLearner(user, learnerId.id);
+    if (result.error) return sendJson(res, result.status || 400, result);
+    return sendJson(res, 200, result);
+  }
+  if (learnerId && method === 'PUT') {
+    const result = mvp.updateLearner(user, learnerId.id, await readBody(req));
     if (result.error) return sendJson(res, result.status || 400, result);
     return sendJson(res, 200, result);
   }
 
-  const teacherDel = match(pathname, '/api/teachers/:id');
-  if (teacherDel && method === 'DELETE') {
-    const result = mvp.deleteTeacher(user, teacherDel.id);
+  const teacherId = match(pathname, '/api/teachers/:id');
+  if (teacherId && method === 'DELETE') {
+    const result = mvp.deleteTeacher(user, teacherId.id);
+    if (result.error) return sendJson(res, result.status || 400, result);
+    return sendJson(res, 200, result);
+  }
+  if (teacherId && method === 'PUT') {
+    const result = mvp.updateTeacher(user, teacherId.id, await readBody(req));
     if (result.error) return sendJson(res, result.status || 400, result);
     return sendJson(res, 200, result);
   }
 
-  const classDel = match(pathname, '/api/classes/:id');
-  if (classDel && method === 'DELETE') {
-    const result = mvp.deleteClass(user, classDel.id);
+  const classId = match(pathname, '/api/classes/:id');
+  if (classId && method === 'DELETE') {
+    const result = mvp.deleteClass(user, classId.id);
+    if (result.error) return sendJson(res, result.status || 400, result);
+    return sendJson(res, 200, result);
+  }
+  if (classId && method === 'PUT') {
+    const result = mvp.updateClass(user, classId.id, await readBody(req));
     if (result.error) return sendJson(res, result.status || 400, result);
     return sendJson(res, 200, result);
   }

@@ -68,6 +68,8 @@
 .case-voice small{display:block;color:var(--muted);margin-bottom:6px;font-weight:800;letter-spacing:.06em}
 .learner-identity{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#f3efff;color:#4a3d7a;font-size:14px}
 .export-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.row-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row-edit{color:var(--violet)!important;font-weight:800}
 .row-delete{color:var(--coral)!important;font-weight:800}
 @media print{
   .sidebar,.demo-note,.ytg-credit,.activity-alert,.export-toolbar,.clock-block,.directory-toolbar,.modal-backdrop,.modal{display:none!important}

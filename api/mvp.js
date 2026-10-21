@@ -629,6 +629,73 @@ function deleteClass(user, id) {
   return { ok: true };
 }
 
+function updateLearner(user, id, payload) {
+  if (!['admin', 'teacher'].includes(user.role)) return { error: 'Forbidden', status: 403 };
+  const data = load();
+  const learner = data.learners.find((l) => String(l.id) === String(id));
+  if (!learner) return { error: 'Learner not found', status: 404 };
+  const scoped = teacherLearnerIds(data, user);
+  if (user.role === 'teacher' && !scoped.includes(learner.id)) return { error: 'Forbidden', status: 403 };
+  if (payload.name) learner.name = String(payload.name).trim();
+  if (payload.code) learner.code = String(payload.code).trim();
+  if (payload.grade) learner.grade = String(payload.grade).trim();
+  if (payload.className) learner.className = String(payload.className).trim();
+  if (payload.teacherId) learner.teacherId = Number(payload.teacherId);
+  const account = data.users.find((u) => String(u.learnerId) === String(learner.id));
+  if (account) {
+    account.name = learner.name;
+    account.loginCode = learner.code;
+    account.active = true;
+    if (payload.pin) {
+      const hashed = hashPassword(payload.pin);
+      account.pinSalt = hashed.salt;
+      account.pinHash = hashed.hash;
+    }
+  }
+  audit(data, user, 'learner_updated', `${learner.name} (${learner.code})`);
+  save(data);
+  return { ok: true, learner };
+}
+
+function updateTeacher(user, id, payload) {
+  const denied = requireAdmin(user);
+  if (denied) return denied;
+  const data = load();
+  const teacher = data.teachers.find((t) => String(t.id) === String(id));
+  if (!teacher) return { error: 'Teacher not found', status: 404 };
+  if (payload.name) teacher.name = String(payload.name).trim();
+  if (payload.email) teacher.email = String(payload.email).trim().toLowerCase();
+  if (payload.className !== undefined) teacher.className = String(payload.className).trim();
+  const account = data.users.find((u) => String(u.teacherId) === String(teacher.id));
+  if (account) {
+    account.name = teacher.name;
+    account.email = teacher.email;
+    account.active = true;
+    if (payload.password) {
+      const hashed = hashPassword(payload.password);
+      account.salt = hashed.salt;
+      account.passwordHash = hashed.hash;
+    }
+  }
+  audit(data, user, 'teacher_updated', teacher.name);
+  save(data);
+  return { ok: true, teacher };
+}
+
+function updateClass(user, id, payload) {
+  const denied = requireAdmin(user);
+  if (denied) return denied;
+  const data = load();
+  const item = data.classes.find((c) => String(c.id) === String(id));
+  if (!item) return { error: 'Class not found', status: 404 };
+  if (payload.name) item.name = String(payload.name).trim();
+  if (payload.grade !== undefined) item.grade = String(payload.grade).trim();
+  if (payload.teacherId !== undefined && payload.teacherId !== '') item.teacherId = Number(payload.teacherId);
+  audit(data, user, 'class_updated', item.name);
+  save(data);
+  return { ok: true, class: item };
+}
+
 module.exports = {
   MESSAGE_MAX,
   getSession,
@@ -645,6 +712,9 @@ module.exports = {
   deleteLearner,
   deleteTeacher,
   deleteClass,
+  updateLearner,
+  updateTeacher,
+  updateClass,
   updateSchool,
   load,
 };

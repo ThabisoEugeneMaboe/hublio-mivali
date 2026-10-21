@@ -8,6 +8,7 @@ let stats = { feelingOkay: 0, activeAlerts: 0, checkedInPercent: 0, awaitingFoll
 let activity = { learnerLoginsToday: 0, learnerCheckInsToday: 0, recent: [] };
 let listFilter = '';
 let activeModal = null;
+let editRecordId = null;
 let clockTimer = null;
 let moodBreakdown = [];
 let teacherNav = 'Dashboard';
@@ -176,6 +177,51 @@ function modalLayer() {
         <div class="modal-actions"><button class="btn btn-light" type="button" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="submit">Save class</button></div>
       </form></div>`;
   }
+  if (activeModal === 'edit-learner') {
+    const l = (db.learners || []).find((x) => String(x.id) === String(editRecordId));
+    if (!l) return '';
+    return `<div class="modal-backdrop" onclick="closeModal()"></div><div class="modal" role="dialog">${closeBtn}<h3>Edit learner</h3>
+      <form class="inline-form modal-form" onsubmit="return updateLearner(event)">
+        <input type="hidden" name="id" value="${esc(l.id)}">
+        <div class="fields">
+          <div class="field"><label>Name</label><input name="name" value="${esc(l.name)}" required autofocus></div>
+          <div class="field"><label>Code</label><input name="code" value="${esc(l.code)}" required></div>
+          <div class="field"><label>Grade</label><input name="grade" value="${esc(l.grade)}"></div>
+          <div class="field"><label>Class</label><input name="className" value="${esc(l.className)}"></div>
+          <div class="field"><label>New PIN (optional)</label><input name="pin" placeholder="Leave blank to keep current"></div>
+        </div>
+        <div class="modal-actions"><button class="btn btn-light" type="button" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="submit">Save changes</button></div>
+      </form></div>`;
+  }
+  if (activeModal === 'edit-teacher') {
+    const t = (db.teachers || []).find((x) => String(x.id) === String(editRecordId));
+    if (!t) return '';
+    return `<div class="modal-backdrop" onclick="closeModal()"></div><div class="modal" role="dialog">${closeBtn}<h3>Edit teacher</h3>
+      <form class="inline-form modal-form" onsubmit="return updateTeacher(event)">
+        <input type="hidden" name="id" value="${esc(t.id)}">
+        <div class="fields">
+          <div class="field"><label>Name</label><input name="name" value="${esc(t.name)}" required autofocus></div>
+          <div class="field"><label>Email</label><input name="email" type="email" value="${esc(t.email)}" required></div>
+          <div class="field"><label>Class</label><input name="className" value="${esc(t.className)}"></div>
+          <div class="field"><label>New password (optional)</label><input name="password" placeholder="Leave blank to keep current"></div>
+        </div>
+        <div class="modal-actions"><button class="btn btn-light" type="button" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="submit">Save changes</button></div>
+      </form></div>`;
+  }
+  if (activeModal === 'edit-class') {
+    const c = (db.classes || []).find((x) => String(x.id) === String(editRecordId));
+    if (!c) return '';
+    return `<div class="modal-backdrop" onclick="closeModal()"></div><div class="modal" role="dialog">${closeBtn}<h3>Edit class</h3>
+      <form class="inline-form modal-form" onsubmit="return updateClass(event)">
+        <input type="hidden" name="id" value="${esc(c.id)}">
+        <div class="fields">
+          <div class="field"><label>Name</label><input name="name" value="${esc(c.name)}" required autofocus></div>
+          <div class="field"><label>Grade</label><input name="grade" value="${esc(c.grade)}"></div>
+          <div class="field"><label>Teacher ID</label><input name="teacherId" value="${esc(c.teacherId)}"></div>
+        </div>
+        <div class="modal-actions"><button class="btn btn-light" type="button" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="submit">Save changes</button></div>
+      </form></div>`;
+  }
   return '';
 }
 
@@ -292,9 +338,10 @@ function table(headers, rows) {
   return `<div class="table-wrap"><table class="data-table"><thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows || `<tr><td colspan="${cols}">No records yet.</td></tr>`}</tbody></table></div>`;
 }
 
-function removeBtn(type, id) {
+function rowActions(type, id) {
   const safeId = encodeURIComponent(String(id));
-  return `<button type="button" class="link row-delete" onclick="deleteRecord('${type}','${safeId}')">Remove</button>`;
+  const editKind = type === 'learners' ? 'learner' : type === 'teachers' ? 'teacher' : 'class';
+  return `<span class="row-actions"><button type="button" class="link row-edit" onclick="openEditModal('${editKind}','${safeId}')">Edit</button><button type="button" class="link row-delete" onclick="deleteRecord('${type}','${safeId}')">Delete</button></span>`;
 }
 
 function exportToolbar(kind) {
@@ -306,7 +353,7 @@ function learnersView() {
   const rows = items
     .map(
       (l) =>
-        `<tr><td>${esc(l.code)}</td><td>${esc(l.name)}</td><td>${esc(l.grade)}</td><td>${esc(l.className)}</td><td>${removeBtn('learners', l.id)}</td></tr>`
+        `<tr><td>${esc(l.code)}</td><td>${esc(l.name)}</td><td>${esc(l.grade)}</td><td>${esc(l.className)}</td><td>${rowActions('learners', l.id)}</td></tr>`
     )
     .join('');
   const empty = items.length ? rows : `<tr><td colspan="5">${listFilter.trim() ? 'No learners match that name.' : 'No records yet.'}</td></tr>`;
@@ -316,7 +363,7 @@ function learnersView() {
 function teachersView() {
   const items = filterByName(db.teachers || []);
   const rows = items
-    .map((t) => `<tr><td>${esc(t.name)}</td><td>${esc(t.email)}</td><td>${esc(t.className)}</td><td>${removeBtn('teachers', t.id)}</td></tr>`)
+    .map((t) => `<tr><td>${esc(t.name)}</td><td>${esc(t.email)}</td><td>${esc(t.className)}</td><td>${rowActions('teachers', t.id)}</td></tr>`)
     .join('');
   const empty = items.length ? rows : `<tr><td colspan="4">${listFilter.trim() ? 'No teachers match that name.' : 'No records yet.'}</td></tr>`;
   return `${staffTopbar('Administration', 'Teachers')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add teacher', 'add-teacher')}${table(['Name', 'Email', 'Class', 'Actions'], empty)}</section>`;
@@ -325,7 +372,7 @@ function teachersView() {
 function classesView() {
   const items = filterByName(db.classes || [], 'name');
   const rows = items
-    .map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.grade)}</td><td>${esc(c.teacherId)}</td><td>${removeBtn('classes', c.id)}</td></tr>`)
+    .map((c) => `<tr><td>${esc(c.name)}</td><td>${esc(c.grade)}</td><td>${esc(c.teacherId)}</td><td>${rowActions('classes', c.id)}</td></tr>`)
     .join('');
   const empty = items.length ? rows : `<tr><td colspan="4">${listFilter.trim() ? 'No classes match that name.' : 'No records yet.'}</td></tr>`;
   return `${staffTopbar('Administration', 'Classes / grades')}${activityBanner()}<section class="panel">${directoryToolbar('+ Add class', 'add-class')}${table(['Class', 'Grade', 'Teacher ID', 'Actions'], empty)}</section>`;
@@ -548,11 +595,19 @@ function setupVoiceMessageUi() {
 
 window.openModal = (id) => {
   activeModal = id;
+  editRecordId = null;
+  render();
+};
+
+window.openEditModal = (kind, id) => {
+  activeModal = `edit-${kind}`;
+  editRecordId = decodeURIComponent(id);
   render();
 };
 
 window.closeModal = () => {
   activeModal = null;
+  editRecordId = null;
   render();
 };
 
@@ -622,6 +677,40 @@ window.createClass = async (event) => {
   return false;
 };
 
+window.updateLearner = async (event) => {
+  event.preventDefault();
+  const f = event.target;
+  const body = { name: f.name.value, code: f.code.value, grade: f.grade.value, className: f.className.value };
+  if (f.pin.value.trim()) body.pin = f.pin.value;
+  await api(`/learners/${encodeURIComponent(f.id.value)}`, { method: 'PUT', body: JSON.stringify(body) });
+  await loadData();
+  closeModal();
+  return false;
+};
+
+window.updateTeacher = async (event) => {
+  event.preventDefault();
+  const f = event.target;
+  const body = { name: f.name.value, email: f.email.value, className: f.className.value };
+  if (f.password.value.trim()) body.password = f.password.value;
+  await api(`/teachers/${encodeURIComponent(f.id.value)}`, { method: 'PUT', body: JSON.stringify(body) });
+  await loadData();
+  closeModal();
+  return false;
+};
+
+window.updateClass = async (event) => {
+  event.preventDefault();
+  const f = event.target;
+  await api(`/classes/${encodeURIComponent(f.id.value)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ name: f.name.value, grade: f.grade.value, teacherId: f.teacherId.value }),
+  });
+  await loadData();
+  closeModal();
+  return false;
+};
+
 window.saveSchool = async (event) => {
   event.preventDefault();
   const f = event.target;
@@ -645,7 +734,7 @@ window.logout = async () => {
 
 window.deleteRecord = async (type, id) => {
   const label = type === 'learners' ? 'learner' : type === 'teachers' ? 'teacher' : 'class';
-  if (!confirm(`Remove this ${label}? They will be deleted from the directory.`)) return;
+  if (!confirm(`Delete this ${label}? They will be removed from the directory.`)) return;
   await api(`/${type}/${decodeURIComponent(id)}`, { method: 'DELETE' });
   await loadData();
   render();
