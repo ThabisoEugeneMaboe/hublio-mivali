@@ -16,6 +16,7 @@ let caseId = '';
 let mood = 'Happy';
 let concern = 'Bullying or safety';
 let learnerMessage = '';
+let preferredTeacherId = '';
 let voiceNoteDataUrl = null;
 let voiceMediaRecorder = null;
 let voiceRecordStream = null;
@@ -251,6 +252,37 @@ function phone(content, nav = true) {
   return `<div class="phone-wrap"><div class="phone"><div class="phone-head">${brand}${phoneClock}<span class="avatar">👦</span></div><div class="phone-content">${content}</div>${nav ? `<div class="bottom-nav"><b>⌂<br>Home</b><span>✓<br>Check-in</span><span>▱<br>Inbox</span><span>♧<br>Profile</span></div>` : ''}</div></div><div class="demo-note">Signed in as ${esc(learnerName)}</div>`;
 }
 
+function defaultPreferredTeacherId() {
+  const learner = me?.learner || db?.learner;
+  if (learner?.teacherId) return String(learner.teacherId);
+  const teachers = db?.teachers || [];
+  return teachers[0] ? String(teachers[0].id) : '';
+}
+
+function preferredTeacherSelectHtml() {
+  const teachers = db?.teachers || [];
+  if (!preferredTeacherId && teachers.length) preferredTeacherId = defaultPreferredTeacherId();
+  const options = teachers.length
+    ? teachers
+        .map(
+          (t) =>
+            `<option value="${esc(t.id)}" ${String(preferredTeacherId) === String(t.id) ? 'selected' : ''}>${esc(t.name)}${t.className ? ` · ${esc(t.className)}` : ''}</option>`
+        )
+        .join('')
+    : '<option value="">No teachers listed yet</option>';
+  return `<label class="field-label" for="preferred-teacher">Preferred teacher to receive this</label><select id="preferred-teacher" class="field-select" required onchange="preferredTeacherId=this.value">${options}</select><p class="field-hint">Your message or voice note will be routed to this teacher. Staff can see your choice.</p>`;
+}
+
+function preferredTeacherLabel(name) {
+  if (!name) return '';
+  return `<span class="badge purple preferred-teacher-badge">Preferred: ${esc(name)}</span>`;
+}
+
+function teacherNameById(id) {
+  const t = (db?.teachers || []).find((x) => String(x.id) === String(id));
+  return t?.name || '';
+}
+
 function learner() {
   const learnerName = me?.learner?.name || me?.name || 'Learner';
   const teacherName = db?.teacher?.name || 'your teacher';
@@ -290,14 +322,16 @@ function learner() {
     );
   if (screen === 'note')
     return phone(
-      `<button class="back" onclick="screen='concern';render()">←</button><span class="eyebrow" style="margin-top:25px">Step 2 of 2 · Optional</span><h1>Would you like to tell us more?</h1><p>Type a short note or record a voice message — both are optional. A teacher will still check on you.</p><label class="field-label" for="learner-message">Type a message</label><textarea id="learner-message" class="textarea" maxlength="280" placeholder="Write here if you want to…" oninput="learnerMessage=this.value">${esc(learnerMessage)}</textarea><div class="voice-panel"><p class="voice-label">Or record a voice message</p><div class="voice-controls"><button type="button" class="btn btn-light voice-btn" id="voice-record-btn">🎙 Start recording</button><button type="button" class="btn btn-light voice-btn" id="voice-clear-btn" hidden>Remove recording</button></div><p class="voice-status" id="voice-status">Up to ${VOICE_MAX_SECONDS} seconds</p><audio id="voice-preview" class="voice-preview" controls hidden></audio></div><div class="big-actions"><button class="btn btn-alert" onclick="handleSendCheckIn()">Send my check-in</button><button class="btn btn-light" onclick="handleSendCheckIn(true)">Skip message</button></div>`,
+      `<button class="back" onclick="screen='concern';render()">←</button><span class="eyebrow" style="margin-top:25px">Step 2 of 2 · ${esc(learnerName)}</span><h1>Would you like to tell us more?</h1><p>Choose who should receive your check-in, then type or record a message (optional).</p>${preferredTeacherSelectHtml()}<label class="field-label" for="learner-message">Type a message</label><textarea id="learner-message" class="textarea" maxlength="280" placeholder="Write here if you want to…" oninput="learnerMessage=this.value">${esc(learnerMessage)}</textarea><div class="voice-panel"><p class="voice-label">Or record a voice message</p><div class="voice-controls"><button type="button" class="btn btn-light voice-btn" id="voice-record-btn">🎙 Start recording</button><button type="button" class="btn btn-light voice-btn" id="voice-clear-btn" hidden>Remove recording</button></div><p class="voice-status" id="voice-status">Up to ${VOICE_MAX_SECONDS} seconds</p><audio id="voice-preview" class="voice-preview" controls hidden></audio></div><div class="big-actions"><button class="btn btn-alert" onclick="handleSendCheckIn()">Send my check-in</button><button class="btn btn-light" onclick="handleSendCheckIn(true)">Skip message</button></div>`,
       false
     );
-  if (screen === 'sent')
+  if (screen === 'sent') {
+    const routedTo = teacherNameById(preferredTeacherId) || teacherName;
     return phone(
-      `<div class="success"><div class="check">✓</div><span class="eyebrow">Check-in sent</span><h1>Thank you for telling us.</h1><p>${esc(teacherName)} has been notified and will check in with you soon.</p><div style="height:24px"></div><button class="btn btn-primary" onclick="screen='home';render()">Back to home</button></div>`,
+      `<div class="success"><div class="check">✓</div><span class="eyebrow">Check-in sent</span><h1>Thank you for telling us.</h1><p><strong>${esc(routedTo)}</strong> (your preferred teacher) has been notified and will check in with you soon.</p><div style="height:24px"></div><button class="btn btn-primary" onclick="screen='home';render()">Back to home</button></div>`,
       false
     );
+  }
   return phone(
     `<div class="success"><div class="check">✓</div><h1>Glad you're okay!</h1><p>Your check-in has been saved. Have a brilliant day, ${esc(learnerName)}.</p><div style="height:24px"></div><button class="btn btn-safe" onclick="screen='home';render()">Done</button></div>`,
     false
@@ -322,7 +356,8 @@ function icon(name) {
 }
 
 function alertRow(a) {
-  return `<div class="alert" onclick="openCase('${esc(a.caseId || a.id)}')"><span class="learner-id">${esc(a.learnerCode || a.id)}</span><div><strong>${esc(a.name)} · ${esc(a.type)}</strong><small>${esc(a.grade)} · ${esc(a.time)} · ${esc(a.status)}</small></div><span class="badge ${a.color || badgeClass(a.level)}">${esc(a.level)}</span></div>`;
+  const pref = a.preferredTeacherName ? ` · Prefers ${esc(a.preferredTeacherName)}` : '';
+  return `<div class="alert" onclick="openCase('${esc(a.caseId || a.id)}')"><span class="learner-id">${esc(a.learnerCode || a.id)}</span><div><strong>${esc(a.name)} · ${esc(a.type)}</strong><small>${esc(a.grade)} · ${esc(a.time)} · ${esc(a.status)}${pref}</small></div><span class="badge ${a.color || badgeClass(a.level)}">${esc(a.level)}</span></div>`;
 }
 
 function staffDashboard() {
@@ -386,10 +421,10 @@ function casesView() {
   const rows = (cases || [])
     .map(
       (c) =>
-        `<tr class="click-row" onclick="openCase('${esc(c.id)}')"><td>${esc(c.id)}</td><td>${esc(c.learnerName)}</td><td>${esc(c.concern)}</td><td><span class="badge ${badgeClass(c.status)}">${esc(c.status)}</span></td></tr>`
+        `<tr class="click-row" onclick="openCase('${esc(c.id)}')"><td>${esc(c.id)}</td><td>${esc(c.learnerName)}</td><td>${esc(c.concern)}</td><td>${c.preferredTeacherName ? esc(c.preferredTeacherName) : '—'}</td><td><span class="badge ${badgeClass(c.status)}">${esc(c.status)}</span></td></tr>`
     )
     .join('');
-  return `<div class="topbar"><div><span class="eyebrow">Case management</span><h1>Cases</h1></div></div><section class="panel">${table(['Case', 'Learner', 'Concern', 'Status'], rows)}</section>`;
+  return `<div class="topbar"><div><span class="eyebrow">Case management</span><h1>Cases</h1></div></div><section class="panel">${table(['Case', 'Learner', 'Concern', 'Preferred teacher', 'Status'], rows)}</section>`;
 }
 
 function reportsView() {
@@ -442,7 +477,8 @@ function caseView() {
   const history = (item.history || []).map((h) => `<li><b>${esc(h.event)}</b><small> · ${esc(h.by)} · ${esc(h.at).replace('T', ' ').slice(0, 16)}</small>${h.note ? `<p>${esc(h.note)}</p>` : ''}</li>`).join('');
   return `<div class="topbar"><div><button class="back" onclick="teacherNav='Cases';screen='dashboard';render()">←</button><span class="eyebrow" style="margin-left:15px">Case file · ${esc(item.id || a.id)}</span><h1 style="margin-top:12px">${esc(a?.type || item.concern || 'Learner case')}</h1></div><span class="badge ${badgeClass(item.status || a?.status)}">${esc(item.status || a?.status)}</span></div>
     <div class="case-wrap"><div class="case-card"><div class="panel-head"><div><h3>${esc(item.learnerName || a?.name)}</h3><p>${esc(item.grade || a?.grade)} · Code ${esc(item.learnerCode || a?.learnerCode)}</p></div><span class="learner-id">${esc(item.learnerCode || a?.id)}</span></div>
-    <div class="case-meta"><span class="badge orange">${esc(item.concern || a?.concern)}</span><span class="badge ${badgeClass(a?.level)}">${esc(a?.level || 'Alert')}</span></div>
+    <div class="case-meta"><span class="badge orange">${esc(item.concern || a?.concern)}</span><span class="badge ${badgeClass(a?.level)}">${esc(a?.level || 'Alert')}</span>${preferredTeacherLabel(item.preferredTeacherName || a?.preferredTeacherName)}</div>
+    ${item.preferredTeacherName || a?.preferredTeacherName ? `<p class="preferred-teacher-note"><strong>${esc(item.learnerName || a?.name)}</strong> asked for <strong>${esc(item.preferredTeacherName || a?.preferredTeacherName)}</strong> to receive this check-in.</p>` : ''}
     <div class="case-note"><small>LEARNER'S OPTIONAL MESSAGE</small><p>${msg ? `"${esc(msg)}"` : voice ? 'Voice message only.' : 'No message provided.'}</p>${voiceHtml}</div>
     <h3>Case history</h3><ul class="timeline">${history || '<li>No history yet.</li>'}</ul>
     <div class="big-actions" style="max-width:360px;margin-top:25px">
@@ -848,10 +884,16 @@ window.handleOkay = async () => {
 
 window.handleSendCheckIn = async (skip) => {
   stopVoiceRecordingInternal();
+  const select = document.getElementById('preferred-teacher');
+  if (select) preferredTeacherId = select.value;
+  if (!preferredTeacherId) {
+    alert('Please choose a preferred teacher to receive your check-in.');
+    return;
+  }
   const textarea = document.getElementById('learner-message') || document.querySelector('.textarea');
   const message = skip ? '' : textarea ? textarea.value.trim() : learnerMessage;
   const voiceNote = skip ? null : voiceNoteDataUrl;
-  await api('/checkin', { method: 'POST', body: JSON.stringify({ mood, isOkay: false, concern, message, voiceNote }) });
+  await api('/checkin', { method: 'POST', body: JSON.stringify({ mood, isOkay: false, concern, message, voiceNote, preferredTeacherId }) });
   voiceNoteDataUrl = null;
   learnerMessage = '';
   screen = 'sent';

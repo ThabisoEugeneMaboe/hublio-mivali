@@ -57,6 +57,10 @@
 .btn-signout{margin-top:10px;width:100%;border:0;border-radius:10px;padding:10px 12px;background:#6d43c0;color:#fff;font-weight:800;cursor:pointer}
 .settings-signout{width:auto;margin-bottom:16px}
 .field-label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin:8px 0 7px;text-transform:uppercase;letter-spacing:.06em}
+.field-select{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:8px}
+.field-hint{font-size:13px;color:var(--muted);margin:0 0 16px;line-height:1.45}
+.preferred-teacher-note{margin:0 0 16px;padding:12px 14px;border-radius:12px;background:#f3efff;color:#3f3568;font-size:14px}
+.preferred-teacher-badge{margin-left:0}
 .voice-panel{margin:8px 0 20px;padding:16px;border:1px dashed var(--line);border-radius:16px;background:#fafbff}
 .voice-label{margin:0 0 10px;font-weight:700;color:var(--ink)}
 .voice-controls{display:flex;flex-wrap:wrap;gap:10px}

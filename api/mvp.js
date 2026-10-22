@@ -211,6 +211,7 @@ function teacherLearnerIds(data, user) {
 
 function canSeeAlert(data, user, alert) {
   if (user.role === 'admin') return true;
+  if (alert.preferredTeacherId && String(user.teacherId) === String(alert.preferredTeacherId)) return true;
   const ids = teacherLearnerIds(data, user);
   const learner = data.learners.find((l) => l.name === alert.name || l.code === alert.learnerCode || String(l.id) === String(alert.learnerId));
   if (learner) return ids.includes(learner.id);
@@ -323,7 +324,10 @@ function dashboard(user) {
     alerts,
     cases,
     learners,
-    teachers: user.role === 'admin' ? data.teachers : data.teachers.filter((t) => String(t.id) === String(user.teacherId)),
+    teachers:
+      user.role === 'learner' || user.role === 'admin'
+        ? data.teachers
+        : data.teachers.filter((t) => String(t.id) === String(user.teacherId)),
     classes: data.classes,
     followUps: data.followUps,
     stats: data.stats,
@@ -368,6 +372,15 @@ function submitCheckIn(user, payload) {
   const concern = payload.concern || '';
   const mood = payload.mood || 'Okay';
   const isOkay = Boolean(payload.isOkay);
+  let preferredTeacherId = null;
+  let preferredTeacherName = null;
+  if (!isOkay && payload.preferredTeacherId) {
+    const pick = data.teachers.find((t) => String(t.id) === String(payload.preferredTeacherId));
+    if (pick) {
+      preferredTeacherId = pick.id;
+      preferredTeacherName = pick.name;
+    }
+  }
   const checkIn = {
     id: nextId(data.checkIns),
     learnerId: learner.id,
@@ -376,6 +389,8 @@ function submitCheckIn(user, payload) {
     concern: isOkay ? null : concern,
     message: isOkay ? '' : message,
     voiceNote: isOkay ? null : voiceNote,
+    preferredTeacherId: isOkay ? null : preferredTeacherId,
+    preferredTeacherName: isOkay ? null : preferredTeacherName,
     submittedAt: nowIso(),
   };
   data.checkIns.push(checkIn);
@@ -399,6 +414,8 @@ function submitCheckIn(user, payload) {
       concern,
       message,
       voiceNote,
+      preferredTeacherId,
+      preferredTeacherName,
       status: 'Open',
     };
     data.alerts.unshift(alert);
@@ -412,6 +429,8 @@ function submitCheckIn(user, payload) {
       concern,
       message,
       voiceNote,
+      preferredTeacherId,
+      preferredTeacherName,
       status: critical ? 'Escalated' : 'Open',
       createdAt: nowIso(),
       history: [
