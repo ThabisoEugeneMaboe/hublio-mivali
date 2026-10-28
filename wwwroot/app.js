@@ -51,7 +51,7 @@ const statePage = {
 
 let [mode, screen] = pageState[currentPage] || ['learner', 'home'];
 const app = document.querySelector('#app');
-const brand = `<div class="brand"><img src="mivali-logo.png" alt="Mivali" class="brand-logo" /></div>`;
+const brand = `<div class="brand"><img src="mivali-logo.png" alt="Mivali" class="brand-logo" /><sup class="tm" aria-hidden="true">™</sup></div>`;
 const ytgCredit = `<footer class="ytg-credit" role="contentinfo"><span>Developed by <strong>Young Tech Giants</strong></span></footer>`;
 
 function esc(value) {
@@ -525,7 +525,7 @@ function staff() {
     content = (views[teacherNav] || staffDashboard)();
   }
   const side = screen === 'dashboard' ? teacherNav : 'Cases';
-  return `<div class="shell">${sidebar(side)}<main class="main">${content}</main></div>${modalLayer()}<div class="demo-note">Mivali · Phase 3 MVP · ${esc(me?.role)}</div>`;
+  return `<div class="shell">${sidebar(side)}<main class="main">${content}</main></div>${modalLayer()}<div class="demo-note">Mivali™ · Phase 3 MVP · ${esc(me?.role)}</div>`;
 }
 
 function render() {
@@ -795,7 +795,7 @@ function downloadBlob(filename, content, mime) {
 function reportSummaryLines() {
   const r = db.reports || {};
   const lines = [
-    ['Mivali activity report', todayLabel()],
+    ['Mivali™ activity report', todayLabel()],
     ['Learner sign-ins today', activity.learnerLoginsToday || 0],
     ['Check-ins today', activity.learnerCheckInsToday || 0],
     ['Total alerts', r.totalAlerts || 0],
@@ -832,7 +832,7 @@ window.downloadReportPdf = (kind) => {
     printReport(kind);
     return;
   }
-  w.document.write(`<!doctype html><html><head><title>Mivali ${kind}</title><link rel="stylesheet" href="styles.css"></head><body><h1>Mivali ${kind === 'audit' ? 'Audit trail' : 'Activity report'}</h1><p>${todayLabel()}</p>${area.innerHTML}</body></html>`);
+  w.document.write(`<!doctype html><html><head><title>Mivali™ ${kind}</title><link rel="stylesheet" href="styles.css"></head><body><h1>Mivali™ ${kind === 'audit' ? 'Audit trail' : 'Activity report'}</h1><p>${todayLabel()}</p>${area.innerHTML}</body></html>`);
   w.document.close();
   w.focus();
   w.print();
@@ -859,10 +859,10 @@ window.shareReport = async (kind) => {
       : reportSummaryLines()
           .filter((r) => r.length)
           .map((r) => r.join(': '));
-  const text = `Mivali ${kind} (${todayLabel()})\n\n${lines.join('\n')}`;
+  const text = `Mivali™ ${kind} (${todayLabel()})\n\n${lines.join('\n')}`;
   if (navigator.share) {
     try {
-      await navigator.share({ title: `Mivali ${kind}`, text });
+      await navigator.share({ title: `Mivali™ ${kind}`, text });
       return;
     } catch {
       /* fall through */

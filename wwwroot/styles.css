@@ -7,6 +7,12 @@
 .login-page{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(145deg,#f1edff,#f8fbff)}
 .login-card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:40px 32px;max-width:420px;width:100%;box-shadow:var(--shadow);text-align:center}
 .login-logo{height:auto;max-height:56px;max-width:min(100%,200px);width:auto;display:block;margin:0 auto 22px;object-fit:contain}
+.tm{font:800 12px Manrope,sans-serif;line-height:1;vertical-align:super}
+.login-lockup{display:inline-flex;align-items:flex-start;justify-content:center;gap:4px;margin:0 auto 22px}
+.login-lockup .login-logo{margin:0}
+.login-lockup .tm{color:var(--violet);font-size:16px;margin-top:2px}
+.brand{gap:6px}
+.brand .tm{color:var(--violet);background:#fff;border-radius:4px;padding:1px 4px;font-size:11px;align-self:flex-start}
 .login-card h1{font:800 28px Manrope;margin:0 0 8px}
 .login-sub{color:var(--muted);margin:0 0 28px;line-height:1.5}
 .login-btn{display:block;text-decoration:none;margin-bottom:12px;text-align:center;width:100%}
