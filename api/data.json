@@ -739,6 +739,30 @@
   ],
   "audit": [
     {
+      "id": "aud-1793172786997-4",
+      "at": "2026-10-28T07:33:06.998Z",
+      "actor": "Thabiso Maboe",
+      "role": "learner",
+      "action": "login",
+      "detail": "learner signed in"
+    },
+    {
+      "id": "aud-1792570919608-74",
+      "at": "2026-10-21T08:21:59.608Z",
+      "actor": "School Admin",
+      "role": "admin",
+      "action": "login",
+      "detail": "admin signed in"
+    },
+    {
+      "id": "aud-1792570826414-15",
+      "at": "2026-10-21T08:20:26.414Z",
+      "actor": "Ms Kholofelo",
+      "role": "teacher",
+      "action": "login",
+      "detail": "teacher signed in"
+    },
+    {
       "id": "aud-1791362267798-16",
       "at": "2026-10-07T08:37:47.798Z",
       "actor": "Thabiso Maboe",
@@ -1263,7 +1287,8 @@
     "feelingOkay": 3,
     "activeAlerts": 11,
     "checkedInPercent": 20,
-    "awaitingFollowUp": 11
+    "awaitingFollowUp": 11,
+    "learnersCheckedInToday": 0
   },
   "moodBreakdown": [
     {
